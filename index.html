@@ -9,17 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* Paleta de campo: suelo, hoja, escala tipo NDVI para la calificación. Layout: barra de NUA arriba, resumen, luego controles + desglose en dos columnas. */
-  --bg: #f3f4ef;
+  /* Paleta institucional: azul marino y dorado; semáforo rojo/amarillo/verde para la calificación final. */
+  --bg: #f2f4f8;
   --surface: #ffffff;
-  --ink: #1d2419;
-  --muted: #5f6a59;
-  --line: #d9ddd0;
-  --accent: #2f6b3a;
-  --accent-soft: #e3eedf;
-  --good: #2f8a3f;
-  --warn: #b7791f;
-  --bad: #b8402f;
+  --ink: #0f1e33;
+  --muted: #56627a;
+  --line: #d6dbe5;
+  --accent: #0b2d5b;
+  --accent-soft: #e5ebf5;
+  --gold: #b48a2c;
+  --good: #1e8a3e;
+  --warn: #c99700;
+  --bad: #c0392b;
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-body: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -27,23 +28,24 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141a13; --surface: #1c241b; --ink: #e7ecdf; --muted: #9ba692;
-    --line: #2f3a2c; --accent: #7cc489; --accent-soft: #24331f;
-    --good: #6fcf7f; --warn: #e3a94a; --bad: #ec7a68; color-scheme: dark;
+    --bg: #0d1626; --surface: #15213a; --ink: #e8edf6; --muted: #9aa7bf;
+    --line: #26375a; --accent: #8fb3e8; --accent-soft: #1c2c4c; --gold: #d9b45a;
+    --good: #4fc26f; --warn: #f2c230; --bad: #ef6b5b; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141a13; --surface: #1c241b; --ink: #e7ecdf; --muted: #9ba692;
-  --line: #2f3a2c; --accent: #7cc489; --accent-soft: #24331f;
-  --good: #6fcf7f; --warn: #e3a94a; --bad: #ec7a68; color-scheme: dark;
+  --bg: #0d1626; --surface: #15213a; --ink: #e8edf6; --muted: #9aa7bf;
+    --line: #26375a; --accent: #8fb3e8; --accent-soft: #1c2c4c; --gold: #d9b45a;
+    --good: #4fc26f; --warn: #f2c230; --bad: #ef6b5b; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
 .wrap { max-width: 980px; margin: 0 auto; padding: 24px 20px 48px; display: grid; gap: 20px; }
-header h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 4vw, 30px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header { border-top: 6px solid var(--gold); padding-top: 14px; }
+header h1 { color: var(--accent); font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 4vw, 30px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
 header p { margin: 4px 0 0; color: var(--muted); }
 .weights { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
 .login { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
 .login label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
@@ -63,11 +65,22 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .pill.good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
 .pill.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
 .pill.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
-.scale { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, #a83a2b 0%, #d9822b 35%, #e8c547 55%, #8cc152 72%, #2f8a3f 100%); }
+.scale { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, var(--bad) 0%, var(--bad) 45%, var(--warn) 62%, var(--warn) 69.5%, var(--good) 70.5%, var(--good) 100%); }
 .marker { position: absolute; top: -6px; width: 4px; height: 26px; border-radius: 2px; background: var(--ink); transform: translateX(-2px); transition: left .25s; }
 .goalmark { position: absolute; top: 16px; font-size: 11px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
 .goalmark::before { content: ""; position: absolute; left: 50%; top: -18px; height: 16px; border-left: 2px dashed var(--muted); }
 .ticks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 22px; }
+.final-box { border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; transition: background .3s, border-color .3s; border: 2px solid var(--line); }
+.final-box.verde { background: color-mix(in srgb, var(--good) 16%, var(--surface)); border-color: var(--good); }
+.final-box.amarillo { background: color-mix(in srgb, var(--warn) 20%, var(--surface)); border-color: var(--warn); }
+.final-box.rojo { background: color-mix(in srgb, var(--bad) 16%, var(--surface)); border-color: var(--bad); }
+.semaforo { display: grid; gap: 6px; padding: 8px 7px; background: #1b2433; border-radius: 14px; }
+.luz { width: 22px; height: 22px; border-radius: 50%; opacity: .22; transition: opacity .3s, box-shadow .3s; }
+.luz.r { background: #e74c3c; } .luz.a { background: #f4c430; } .luz.v { background: #2ecc71; }
+.luz.on { opacity: 1; box-shadow: 0 0 10px 2px currentColor; }
+.luz.r.on { color: #e74c3c; } .luz.a.on { color: #f4c430; } .luz.v.on { color: #2ecc71; }
+.estado { font-weight: 700; font-size: 15px; margin-top: 8px; }
+.estado-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .need { margin-top: 12px; font-size: 14px; }
 .need strong { font-family: var(--font-mono); }
 .grid2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
@@ -130,10 +143,16 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
   </section>
 
   <section class="card summary" aria-live="polite">
-    <div>
-      <div class="who" id="who"><span class="example">Ejemplo</span></div>
-      <div class="big"><span id="final">0.0</span><small> / 10</small></div>
-      <span class="pill" id="status">—</span>
+    <div class="final-box" id="finalBox">
+      <div>
+        <div class="who" id="who"><span class="example">Ejemplo</span></div>
+        <div class="big"><span id="final">0.0</span><small> / 10</small></div>
+        <div class="estado" id="status">—</div>
+        <div class="estado-desc" id="statusDesc"></div>
+      </div>
+      <div class="semaforo" aria-hidden="true">
+        <div class="luz r" id="luzR"></div><div class="luz a" id="luzA"></div><div class="luz v" id="luzV"></div>
+      </div>
     </div>
     <div>
       <div class="scale">
@@ -183,7 +202,8 @@ const CONFIG = {
     { id: "extra", nombre: "Puntos extra", peso: 0.05, extra: true, prefijo: "Actividad extra", registradas: ["Examen sorpresa (31/08)", "Plataformas (05/10)", "Curso eCognition", "Sorpresa Forms"], pendientes: 0, editable: true }
   ],
   valorInicialSimulado: 8.0,
-  tope: 10
+  tope: 10,
+  minimo: 7   // calificación mínima aprobatoria para el semáforo
 };
 /* Calificaciones registradas por NUA, en el mismo orden que "registradas". */
 const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[6.0,0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,10.0,10.0,3.5]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,9.0,10.0,4.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,5.0,0.0,0.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,6.0,0.0,7.5]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0],"extra":[9.0,9.0,10.0,1.5]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[9.0,0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[10.0,0.0,10.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0],"extra":[0.0,8.0,0.0,6.5]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0],"extra":[9.0,1.0,10.0,2.5]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,3.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,6.5]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,5.0,10.0,0.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,3.0,0.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,9.0,10.0,6.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[5.0,0.0,10.0,3.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0],"extra":[9.0,2.0,0.0,3.5]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0],"extra":[9.0,10.0,10.0,6.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,4.0,10.0,4.5]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[7.0,4.0,10.0,1.5]}};
@@ -276,10 +296,18 @@ function update() {
   $("goalmark").style.left = (meta * 10) + "%";
   $("goalmark").textContent = "meta " + fmt(meta);
 
-  const st = $("status");
-  if (total >= meta) { st.className = "pill good"; st.textContent = "Alcanzas tu meta"; }
-  else if (total >= meta - 1) { st.className = "pill warn"; st.textContent = "Cerca de tu meta"; }
-  else { st.className = "pill bad"; st.textContent = "Por debajo de tu meta"; }
+  // Semáforo contra la mínima aprobatoria (7)
+  const maximo = Math.min(CONFIG.tope, fijoPts + 10 * pesoLibre);
+  let color, titulo, desc;
+  if (total >= CONFIG.minimo) { color = "verde"; titulo = "Aprobado"; desc = `Con esta simulación pasas con ${fmt(CONFIG.minimo)} o más.`; }
+  else if (maximo >= CONFIG.minimo) { color = "amarillo"; titulo = "En peligro"; desc = `Con esta simulación no llegas a ${fmt(CONFIG.minimo)}, pero todavía puedes alcanzarlo.`; }
+  else { color = "rojo"; titulo = `Ya no alcanza el ${fmt(CONFIG.minimo, 0)}`; desc = `Aun con 10 en todo lo que falta, lo máximo posible es ${fmt(maximo)}.`; }
+  $("finalBox").className = "final-box " + color;
+  $("status").textContent = titulo;
+  $("statusDesc").textContent = desc;
+  $("luzR").classList.toggle("on", color === "rojo");
+  $("luzA").classList.toggle("on", color === "amarillo");
+  $("luzV").classList.toggle("on", color === "verde");
 
   let txt;
   if (pesoLibre <= 0) txt = "Ya no quedan calificaciones por simular.";
