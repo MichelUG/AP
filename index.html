@@ -58,6 +58,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 .big { font-family: var(--font-mono); font-weight: 600; font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
 .big small { font-size: 20px; color: var(--muted); }
 .who { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.nombre { display: block; font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--ink); text-wrap: balance; margin-bottom: 2px; }
 .pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-top: 8px; }
 .pill.good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
 .pill.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
@@ -179,9 +180,10 @@ const CONFIG = {
   ],
   valorInicialSimulado: 8.0
 };
-/* Calificaciones registradas por NUA (sin nombres), en el mismo orden que "registradas". */
+/* Calificaciones registradas por NUA, en el mismo orden que "registradas". */
 const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]}};
 const EJEMPLO = { examenes: [8.0], practicas: [9.0, 8.0], tareas: [10.0, 9.0, 10.0] };
+const NOMBRES = {"301259": "CONDE ZARAZUA MARIA ABIGAIL", "301552": "GARCIA AGUILAR HORACIO", "301266": "GUDIÑO PEREZ ANA VIANEY", "300706": "GUERRERO OLVERA ANGEL IZAEL", "301276": "HERNANDEZ CELESTINO MARIA GUADALUPE", "301258": "HERNANDEZ ESCOBAR ALONDRA", "799231": "HERNANDEZ ESPINO EMANUEL", "300847": "HERNANDEZ MATA ANGEL JOVANI", "301549": "LOPEZ MUÑIZ LEONARDO", "301274": "MAURICIO AGUILAR NANCY LIZBETH", "300871": "MAURICIO RAMIREZ JESUS", "301264": "MONTES GIL JUAN RAMON", "301275": "MONTES MATA KAREN YADIRA", "301267": "RAMIREZ OROZCO DIEGO", "301272": "RAMOS BARRERA RAUL", "301559": "RIVERA GRIMALDO SHERLYN JULEYME", "301269": "SUAREZ HERNANDEZ CESAR REMEDIOS", "301263": "VALENZUELA VALTIERRA EMILIO MARTIN", "301561": "VILLEGAS PEREZ ANGEL JAZIEL", "373738": "CHAVERO RESENDIZ ARMANDO", "301558": "SAMUEL"};
 /* ================================================== */
 
 let fijas = EJEMPLO;
@@ -299,7 +301,7 @@ function cargar(nua) {
   fijas = REGISTRADAS[clave];
   $("msg").className = "msg";
   $("msg").textContent = "Calificaciones cargadas. Mueve las barras para simular lo que falta.";
-  $("who").textContent = "NUA " + clave;
+  $("who").innerHTML = `<span class="nombre">${NOMBRES[clave] || ""}</span>NUA ${clave}`;
   try { localStorage.setItem("nua", clave); } catch (e) {}
   initSim(); renderControls(); update();
 }
