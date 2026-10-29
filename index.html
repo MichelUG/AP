@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de calificaciones · Agricultura de Precisión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Paleta de campo: suelo, hoja, escala tipo NDVI para la calificación. Layout: barra de NUA arriba, resumen, luego controles + desglose en dos columnas. */
+  --bg: #f3f4ef;
+  --surface: #ffffff;
+  --ink: #1d2419;
+  --muted: #5f6a59;
+  --line: #d9ddd0;
+  --accent: #2f6b3a;
+  --accent-soft: #e3eedf;
+  --good: #2f8a3f;
+  --warn: #b7791f;
+  --bad: #b8402f;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a13; --surface: #1c241b; --ink: #e7ecdf; --muted: #9ba692;
+    --line: #2f3a2c; --accent: #7cc489; --accent-soft: #24331f;
+    --good: #6fcf7f; --warn: #e3a94a; --bad: #ec7a68; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a13; --surface: #1c241b; --ink: #e7ecdf; --muted: #9ba692;
+  --line: #2f3a2c; --accent: #7cc489; --accent-soft: #24331f;
+  --good: #6fcf7f; --warn: #e3a94a; --bad: #ec7a68; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 24px 20px 48px; display: grid; gap: 20px; }
+header h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 4vw, 30px); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); }
+.weights { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+.login { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.login label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+input[type="text"], input[type="number"] { font-family: var(--font-mono); font-size: 16px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+input[type="text"] { width: 160px; }
+button { font-family: var(--font-body); font-weight: 600; font-size: 14px; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
+button.ghost { background: transparent; color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.msg { font-size: 14px; color: var(--muted); flex-basis: 100%; margin: 0; }
+.msg.error { color: var(--bad); }
+.summary { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.big { font-family: var(--font-mono); font-weight: 600; font-size: 64px; line-height: 1; font-variant-numeric: tabular-nums; }
+.big small { font-size: 20px; color: var(--muted); }
+.who { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.pill { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 999px; margin-top: 8px; }
+.pill.good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+.pill.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+.scale { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(90deg, #a83a2b 0%, #d9822b 35%, #e8c547 55%, #8cc152 72%, #2f8a3f 100%); }
+.marker { position: absolute; top: -6px; width: 4px; height: 26px; border-radius: 2px; background: var(--ink); transform: translateX(-2px); transition: left .25s; }
+.goalmark { position: absolute; top: 16px; font-size: 11px; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.goalmark::before { content: ""; position: absolute; left: 50%; top: -18px; height: 16px; border-left: 2px dashed var(--muted); }
+.ticks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 22px; }
+.need { margin-top: 12px; font-size: 14px; }
+.need strong { font-family: var(--font-mono); }
+.grid2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start; }
+h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.hint { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+fieldset { border: 0; padding: 0; margin: 0 0 14px; }
+legend { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 6px; padding: 0; }
+.row { display: grid; grid-template-columns: 110px 1fr 74px; gap: 10px; align-items: center; padding: 6px 0; }
+.row label { font-size: 14px; }
+.row input[type="number"] { width: 74px; text-align: right; font-size: 15px; padding: 6px 8px; }
+.row.fixed { background: var(--accent-soft); border-radius: 8px; padding: 6px 8px; margin: 0 -8px; }
+.lock { font-size: 12px; color: var(--accent); font-weight: 600; }
+.fixedval { font-family: var(--font-mono); font-weight: 600; text-align: right; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+tfoot td { font-weight: 700; border-bottom: 0; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+.goal { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-top: 14px; }
+.goal input { width: 74px; font-size: 15px; padding: 6px 8px; }
+.note { font-size: 13px; color: var(--muted); }
+.example { font-size: 12px; font-weight: 700; color: var(--warn); text-transform: uppercase; letter-spacing: .06em; }
+.adds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color: var(--accent); border: 1px dashed var(--accent); }
+.cnt { color: var(--muted); font-size: 12px; }
+@media (max-width: 760px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .summary { grid-template-columns: 1fr; gap: 14px; }
+  .big { font-size: 52px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Simulador de calificaciones · Agricultura de Precisión</h1>
+    <p>Escribe tu NUA para cargar tus calificaciones registradas y mueve las que faltan para ver cómo quedaría tu final.</p>
+    <div class="weights">
+      <span class="chip">Exámenes 30%</span>
+      <span class="chip">Prácticas 30%</span>
+      <span class="chip">Tareas 10%</span>
+      <span class="chip">Proyecto final 30%</span>
+    </div>
+  </header>
+
+  <section class="card">
+    <form class="login" id="loginForm">
+      <label for="nua">Tu NUA
+        <input type="text" id="nua" inputmode="numeric" autocomplete="off" placeholder="Ej. 301259">
+      </label>
+      <button type="submit">Ver mis calificaciones</button>
+      <button type="button" class="ghost" id="resetBtn">Reiniciar simulación</button>
+      <p class="msg" id="msg">Mientras no escribas tu NUA verás un ejemplo.</p>
+    </form>
+  </section>
+
+  <section class="card summary" aria-live="polite">
+    <div>
+      <div class="who" id="who"><span class="example">Ejemplo</span></div>
+      <div class="big"><span id="final">0.0</span><small> / 10</small></div>
+      <span class="pill" id="status">—</span>
+    </div>
+    <div>
+      <div class="scale">
+        <div class="marker" id="marker"></div>
+        <div class="goalmark" id="goalmark">meta</div>
+      </div>
+      <div class="ticks"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+      <p class="need" id="need"></p>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Tus calificaciones</h2>
+      <p class="hint">Las marcadas con candado ya están registradas y no se pueden cambiar. Las demás son tu simulación. Si en el semestre hay más o menos prácticas, tareas o exámenes, agrégalas o quítalas.</p>
+      <div id="controls"></div>
+      <div class="goal">
+        <label for="goalInput">Calificación que quiero alcanzar:</label>
+        <input type="number" id="goalInput" min="0" max="10" step="0.1" value="7">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Desglose</h2>
+      <p class="hint">Cuántos puntos aporta cada rubro a tu calificación final.</p>
+      <table>
+        <thead><tr><th>Rubro</th><th class="num">Promedio</th><th class="num">Peso</th><th class="num">Aporta</th></tr></thead>
+        <tbody id="breakdown"></tbody>
+        <tfoot><tr><td>Calificación final</td><td></td><td class="num">100%</td><td class="num" id="totalCell">0.00</td></tr></tfoot>
+      </table>
+      <p class="note">Esta página es solo un simulador. Tu calificación oficial es la que registra tu profesor.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+/* ===== CONFIGURACIÓN (el profesor edita aquí) ===== */
+const CONFIG = {
+  // registradas: nombres de lo que ya se calificó. pendientes: cuántas faltan (supuesto inicial; el alumno puede agregar o quitar).
+  rubros: [
+    { id: "examenes",  nombre: "Exámenes",       peso: 0.30, prefijo: "Examen",   registradas: ["Examen 1"], pendientes: 2, editable: true },
+    { id: "practicas", nombre: "Prácticas",      peso: 0.30, prefijo: "Práctica", registradas: ["Mapas temáticos", "SIG CINUG"], pendientes: 2, editable: true },
+    { id: "tareas",    nombre: "Tareas",         peso: 0.10, prefijo: "Tarea",    registradas: ["Puebla y estados", "Composition", "Firmas espectrales"], pendientes: 2, editable: true },
+    { id: "proyecto",  nombre: "Proyecto final", peso: 0.30, prefijo: "Proyecto final", registradas: [], pendientes: 1, editable: false }
+  ],
+  valorInicialSimulado: 8.0
+};
+/* Calificaciones registradas por NUA (sin nombres), en el mismo orden que "registradas". */
+const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]}};
+const EJEMPLO = { examenes: [8.0], practicas: [9.0, 8.0], tareas: [10.0, 9.0, 10.0] };
+/* ================================================== */
+
+let fijas = EJEMPLO;
+let pend = {};   // rubro -> array de valores simulados
+
+const $ = id => document.getElementById(id);
+const clamp = v => Math.min(10, Math.max(0, v));
+const fmt = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+
+function initSim() {
+  pend = {};
+  CONFIG.rubros.forEach(r => { pend[r.id] = Array(r.pendientes).fill(CONFIG.valorInicialSimulado); });
+}
+
+function nombrePend(r, j) {
+  if (r.id === "proyecto") return "Proyecto final";
+  return r.prefijo + " " + (r.registradas.length + j + 1);
+}
+
+function renderControls() {
+  const box = $("controls");
+  box.innerHTML = "";
+  CONFIG.rubros.forEach(r => {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = `<legend>${r.nombre} · ${Math.round(r.peso * 100)}%</legend>`;
+    (fijas[r.id] || []).forEach((v, i) => {
+      const row = document.createElement("div");
+      row.className = "row fixed";
+      row.innerHTML = `<span>${r.registradas[i]}</span><span class="lock">🔒 Registrada</span><span class="fixedval">${fmt(v)}</span>`;
+      fs.appendChild(row);
+    });
+    pend[r.id].forEach((v, j) => {
+      const nombre = nombrePend(r, j), sid = r.id + "-" + j;
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<label for="r-${sid}">${nombre}</label>
+        <input type="range" id="r-${sid}" min="0" max="10" step="0.1" value="${v}" aria-label="${nombre}">
+        <input type="number" id="n-${sid}" min="0" max="10" step="0.1" value="${fmt(v)}" aria-label="${nombre} (número)">`;
+      const range = row.querySelector('input[type="range"]'), num = row.querySelector('input[type="number"]');
+      range.addEventListener("input", () => { pend[r.id][j] = +range.value; num.value = fmt(pend[r.id][j]); update(); });
+      num.addEventListener("input", () => {
+        if (num.value === "" || isNaN(+num.value)) return;
+        pend[r.id][j] = clamp(+num.value); range.value = pend[r.id][j]; update();
+      });
+      num.addEventListener("blur", () => { num.value = fmt(pend[r.id][j]); });
+      fs.appendChild(row);
+    });
+    if (r.editable) {
+      const act = document.createElement("div");
+      act.className = "adds";
+      act.innerHTML = `<button type="button" class="mini" data-a="add">+ Agregar ${r.prefijo.toLowerCase()}</button>` +
+        (pend[r.id].length ? `<button type="button" class="mini" data-a="del">− Quitar la última</button>` : "");
+      act.querySelector('[data-a="add"]').addEventListener("click", () => { if (pend[r.id].length < 12) { pend[r.id].push(CONFIG.valorInicialSimulado); renderControls(); update(); } });
+      const del = act.querySelector('[data-a="del"]');
+      if (del) del.addEventListener("click", () => { pend[r.id].pop(); renderControls(); update(); });
+      fs.appendChild(act);
+    }
+    box.appendChild(fs);
+  });
+}
+
+function compute() {
+  let total = 0, fijoPts = 0, pesoLibre = 0;
+  const filas = CONFIG.rubros.map(r => {
+    const f = fijas[r.id] || [], p = pend[r.id];
+    const n = f.length + p.length;
+    if (n === 0) return { r, prom: 0, aporte: 0, n };
+    const prom = (f.reduce((a, b) => a + b, 0) + p.reduce((a, b) => a + b, 0)) / n;
+    const w = r.peso / n;
+    fijoPts += f.reduce((a, b) => a + b, 0) * w;
+    pesoLibre += p.length * w;
+    total += prom * r.peso;
+    return { r, prom, aporte: prom * r.peso, n };
+  });
+  return { total, filas, fijoPts, pesoLibre };
+}
+
+function update() {
+  const { total, filas, fijoPts, pesoLibre } = compute();
+  const meta = clamp(parseFloat($("goalInput").value) || 0);
+  $("final").textContent = fmt(total);
+  $("marker").style.left = (total * 10) + "%";
+  $("goalmark").style.left = (meta * 10) + "%";
+  $("goalmark").textContent = "meta " + fmt(meta);
+
+  const st = $("status");
+  if (total >= meta) { st.className = "pill good"; st.textContent = "Alcanzas tu meta"; }
+  else if (total >= meta - 1) { st.className = "pill warn"; st.textContent = "Cerca de tu meta"; }
+  else { st.className = "pill bad"; st.textContent = "Por debajo de tu meta"; }
+
+  let txt;
+  if (pesoLibre <= 0) txt = "Ya no quedan calificaciones por simular.";
+  else {
+    const nec = (meta - fijoPts) / pesoLibre;
+    if (nec <= 0) txt = `Con lo que ya tienes registrado tienes asegurado ${fmt(meta)}, aunque saques 0 en lo que falta.`;
+    else if (nec > 10) txt = `Para llegar a ${fmt(meta)} necesitarías más de 10 en todo lo que falta. Lo máximo que puedes alcanzar con 10 en todo es <strong>${fmt(fijoPts + 10 * pesoLibre)}</strong>.`;
+    else txt = `Para llegar a <strong>${fmt(meta)}</strong> necesitas sacar en promedio <strong>${fmt(nec)}</strong> en todo lo que falta.`;
+  }
+  $("need").innerHTML = txt;
+
+  $("breakdown").innerHTML = filas.map(f => `
+    <tr><td>${f.r.nombre} <span class="cnt">(${f.n})</span><div class="bar"><span style="width:${f.prom * 10}%"></span></div></td>
+    <td class="num">${fmt(f.prom)}</td><td class="num">${Math.round(f.r.peso * 100)}%</td><td class="num">${fmt(f.aporte, 2)}</td></tr>`).join("");
+  $("totalCell").textContent = fmt(total, 2);
+}
+
+function cargar(nua) {
+  const clave = nua.trim().replace(/\s+/g, "");
+  if (!clave) return;
+  if (!(clave in REGISTRADAS)) {
+    $("msg").className = "msg error";
+    $("msg").textContent = `No encontramos el NUA ${clave}. Revisa que esté bien escrito o pregúntale a tu profesor.`;
+    return;
+  }
+  fijas = REGISTRADAS[clave];
+  $("msg").className = "msg";
+  $("msg").textContent = "Calificaciones cargadas. Mueve las barras para simular lo que falta.";
+  $("who").textContent = "NUA " + clave;
+  try { localStorage.setItem("nua", clave); } catch (e) {}
+  initSim(); renderControls(); update();
+}
+
+$("loginForm").addEventListener("submit", e => { e.preventDefault(); cargar($("nua").value); });
+$("resetBtn").addEventListener("click", () => { initSim(); renderControls(); update(); });
+$("goalInput").addEventListener("input", update);
+
+initSim(); renderControls(); update();
+try { const n = localStorage.getItem("nua"); if (n) { $("nua").value = n; cargar(n); } } catch (e) {}
+</script>
+</body>
+</html>
