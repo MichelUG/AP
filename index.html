@@ -114,6 +114,7 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
       <span class="chip">Prácticas 30%</span>
       <span class="chip">Tareas 10%</span>
       <span class="chip">Proyecto final 30%</span>
+      <span class="chip">Puntos extra +5%</span>
     </div>
   </header>
 
@@ -161,8 +162,9 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
       <table>
         <thead><tr><th>Rubro</th><th class="num">Promedio</th><th class="num">Peso</th><th class="num">Aporta</th></tr></thead>
         <tbody id="breakdown"></tbody>
-        <tfoot><tr><td>Calificación final</td><td></td><td class="num">100%</td><td class="num" id="totalCell">0.00</td></tr></tfoot>
+        <tfoot><tr><td>Calificación final</td><td></td><td class="num">105%</td><td class="num" id="totalCell">0.00</td></tr></tfoot>
       </table>
+      <p class="note" id="topeNote"></p>
       <p class="note">Esta página es solo un simulador. Tu calificación oficial es la que registra tu profesor.</p>
     </section>
   </div>
@@ -176,14 +178,17 @@ const CONFIG = {
     { id: "examenes",  nombre: "Exámenes",       peso: 0.30, prefijo: "Examen",   registradas: ["Examen 1"], pendientes: 2, editable: true },
     { id: "practicas", nombre: "Prácticas",      peso: 0.30, prefijo: "Práctica", registradas: ["Mapas temáticos", "SIG CINUG"], pendientes: 2, editable: true },
     { id: "tareas",    nombre: "Tareas",         peso: 0.10, prefijo: "Tarea",    registradas: ["Puebla y estados", "Composition", "Firmas espectrales"], pendientes: 2, editable: true },
-    { id: "proyecto",  nombre: "Proyecto final", peso: 0.30, prefijo: "Proyecto final", registradas: [], pendientes: 1, editable: false }
+    { id: "proyecto",  nombre: "Proyecto final", peso: 0.30, prefijo: "Proyecto final", registradas: [], pendientes: 1, editable: false },
+    // Extra: su promedio vale 5% adicional sobre la calificación final (tope 10).
+    { id: "extra", nombre: "Puntos extra", peso: 0.05, extra: true, prefijo: "Actividad extra", registradas: ["Examen sorpresa (31/08)", "Plataformas (05/10)", "Curso eCognition", "Sorpresa Forms"], pendientes: 0, editable: true }
   ],
-  valorInicialSimulado: 8.0
+  valorInicialSimulado: 8.0,
+  tope: 10
 };
 /* Calificaciones registradas por NUA, en el mismo orden que "registradas". */
-const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0]}};
-const EJEMPLO = { examenes: [8.0], practicas: [9.0, 8.0], tareas: [10.0, 9.0, 10.0] };
-const NOMBRES = {"301259": "CONDE ZARAZUA MARIA ABIGAIL", "301552": "GARCIA AGUILAR HORACIO", "301266": "GUDIÑO PEREZ ANA VIANEY", "300706": "GUERRERO OLVERA ANGEL IZAEL", "301276": "HERNANDEZ CELESTINO MARIA GUADALUPE", "301258": "HERNANDEZ ESCOBAR ALONDRA", "799231": "HERNANDEZ ESPINO EMANUEL", "300847": "HERNANDEZ MATA ANGEL JOVANI", "301549": "LOPEZ MUÑIZ LEONARDO", "301274": "MAURICIO AGUILAR NANCY LIZBETH", "300871": "MAURICIO RAMIREZ JESUS", "301264": "MONTES GIL JUAN RAMON", "301275": "MONTES MATA KAREN YADIRA", "301267": "RAMIREZ OROZCO DIEGO", "301272": "RAMOS BARRERA RAUL", "301559": "RIVERA GRIMALDO SHERLYN JULEYME", "301269": "SUAREZ HERNANDEZ CESAR REMEDIOS", "301263": "VALENZUELA VALTIERRA EMILIO MARTIN", "301561": "VILLEGAS PEREZ ANGEL JAZIEL", "373738": "CHAVERO RESENDIZ ARMANDO", "301558": "SAMUEL"};
+const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[6.0,0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,10.0,10.0,3.5]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,9.0,10.0,4.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,5.0,0.0,0.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,6.0,0.0,7.5]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0],"extra":[9.0,9.0,10.0,1.5]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[9.0,0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[10.0,0.0,10.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0],"extra":[0.0,8.0,0.0,6.5]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0],"extra":[9.0,1.0,10.0,2.5]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,3.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,6.5]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,5.0,10.0,0.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,3.0,0.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,9.0,10.0,6.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[5.0,0.0,10.0,3.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0],"extra":[9.0,2.0,0.0,3.5]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0],"extra":[9.0,10.0,10.0,6.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,4.0,10.0,4.5]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[7.0,4.0,10.0,1.5]}};
+const EJEMPLO = { examenes: [8.0], practicas: [9.0, 8.0], tareas: [10.0, 9.0, 10.0], extra: [9.0, 6.0, 10.0, 4.0] };
+const NOMBRES = {"301259": "CONDE ZARAZUA MARIA ABIGAIL", "301552": "GARCIA AGUILAR HORACIO", "301266": "GUDIÑO PEREZ ANA VIANEY", "300706": "GUERRERO OLVERA ANGEL IZAEL", "301276": "HERNANDEZ CELESTINO MARIA GUADALUPE", "301258": "HERNANDEZ ESCOBAR ALONDRA", "799231": "HERNANDEZ ESPINO EMANUEL", "300847": "HERNANDEZ MATA ANGEL JOVANI", "301549": "LOPEZ MUÑIZ LEONARDO", "301274": "MAURICIO AGUILAR NANCY LIZBETH", "300871": "MAURICIO RAMIREZ JESUS", "301264": "MONTES GIL JUAN RAMON", "301275": "MONTES MATA KAREN YADIRA", "301267": "RAMIREZ OROZCO DIEGO", "301272": "RAMOS BARRERA RAUL", "301559": "RIVERA GRIMALDO SHERLYN JULEYME", "301269": "SUAREZ HERNANDEZ CESAR REMEDIOS", "301263": "VALENZUELA VALTIERRA EMILIO MARTIN", "301561": "VILLEGAS PEREZ ANGEL JAZIEL", "373738": "CHAVERO RESENDIZ ARMANDO", "301558": "RIVERA GUTIERREZ SAMUEL ALEXANDER"};
 /* ================================================== */
 
 let fijas = EJEMPLO;
@@ -208,7 +213,7 @@ function renderControls() {
   box.innerHTML = "";
   CONFIG.rubros.forEach(r => {
     const fs = document.createElement("fieldset");
-    fs.innerHTML = `<legend>${r.nombre} · ${Math.round(r.peso * 100)}%</legend>`;
+    fs.innerHTML = `<legend>${r.nombre} · ${r.extra ? "+" : ""}${Math.round(r.peso * 100)}%${r.extra ? " adicional" : ""}</legend>`;
     (fijas[r.id] || []).forEach((v, i) => {
       const row = document.createElement("div");
       row.className = "row fixed";
@@ -246,7 +251,7 @@ function renderControls() {
 }
 
 function compute() {
-  let total = 0, fijoPts = 0, pesoLibre = 0;
+  let base = 0, fijoPts = 0, pesoLibre = 0;
   const filas = CONFIG.rubros.map(r => {
     const f = fijas[r.id] || [], p = pend[r.id];
     const n = f.length + p.length;
@@ -255,14 +260,16 @@ function compute() {
     const w = r.peso / n;
     fijoPts += f.reduce((a, b) => a + b, 0) * w;
     pesoLibre += p.length * w;
-    total += prom * r.peso;
+    base += prom * r.peso;
     return { r, prom, aporte: prom * r.peso, n };
   });
-  return { total, filas, fijoPts, pesoLibre };
+  const sinTope = base;
+  const total = Math.min(CONFIG.tope, sinTope);
+  return { total, sinTope, filas, fijoPts, pesoLibre };
 }
 
 function update() {
-  const { total, filas, fijoPts, pesoLibre } = compute();
+  const { total, sinTope, filas, fijoPts, pesoLibre } = compute();
   const meta = clamp(parseFloat($("goalInput").value) || 0);
   $("final").textContent = fmt(total);
   $("marker").style.left = (total * 10) + "%";
@@ -286,8 +293,9 @@ function update() {
 
   $("breakdown").innerHTML = filas.map(f => `
     <tr><td>${f.r.nombre} <span class="cnt">(${f.n})</span><div class="bar"><span style="width:${f.prom * 10}%"></span></div></td>
-    <td class="num">${fmt(f.prom)}</td><td class="num">${Math.round(f.r.peso * 100)}%</td><td class="num">${fmt(f.aporte, 2)}</td></tr>`).join("");
+    <td class="num">${fmt(f.prom)}</td><td class="num">${f.r.extra ? "+" : ""}${Math.round(f.r.peso * 100)}%</td><td class="num">${fmt(f.aporte, 2)}</td></tr>`).join("");
   $("totalCell").textContent = fmt(total, 2);
+  $("topeNote").textContent = sinTope > CONFIG.tope ? `Con los puntos extra sumarías ${fmt(sinTope, 2)}, pero la calificación final tiene tope de ${CONFIG.tope}.` : "";
 }
 
 function cargar(nua) {
