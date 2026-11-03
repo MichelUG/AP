@@ -190,42 +190,55 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
 </div>
 
 <script>
-/* ===== CONFIGURACIÓN (el profesor edita aquí) ===== */
-const CONFIG = {
-  // registradas: nombres de lo que ya se calificó. pendientes: cuántas faltan (supuesto inicial; el alumno puede agregar o quitar).
-  rubros: [
-    { id: "examenes",  nombre: "Exámenes",       peso: 0.30, prefijo: "Examen",   registradas: ["Examen 1"], pendientes: 2, editable: true },
-    { id: "practicas", nombre: "Prácticas",      peso: 0.30, prefijo: "Práctica", registradas: ["Mapas temáticos", "SIG CINUG"], pendientes: 2, editable: true },
-    { id: "tareas",    nombre: "Tareas",         peso: 0.10, prefijo: "Tarea",    registradas: ["Puebla y estados", "Composition", "Firmas espectrales"], pendientes: 2, editable: true },
-    { id: "proyecto",  nombre: "Proyecto final", peso: 0.30, prefijo: "Proyecto final", registradas: [], pendientes: 1, editable: false },
-    // Extra: su promedio vale 5% adicional sobre la calificación final (tope 10).
-    { id: "extra", nombre: "Puntos extra", peso: 0.05, extra: true, prefijo: "Actividad extra", registradas: ["Examen sorpresa (31/08)", "Plataformas (05/10)", "Curso eCognition", "Sorpresa Forms"], pendientes: 0, editable: true }
-  ],
-  valorInicialSimulado: 8.0,
-  tope: 10,
-  minimo: 7   // calificación mínima aprobatoria para el semáforo
+/* ===== DATOS (se generan desde la hoja de captura; no editar a mano) ===== */
+const HOJA = {"columnas":[{"id":"ex1","rubro":"examenes","nombre":"Examen 1"},{"id":"pr1","rubro":"practicas","nombre":"Mapas temáticos"},{"id":"pr2","rubro":"practicas","nombre":"SIG CINUG"},{"id":"ta1","rubro":"tareas","nombre":"Puebla y estados"},{"id":"ta2","rubro":"tareas","nombre":"Composition"},{"id":"ta3","rubro":"tareas","nombre":"Firmas espectrales"},{"id":"pf1","rubro":"proyecto","nombre":"Proyecto final"},{"id":"xt1","rubro":"extra","nombre":"Examen sorpresa (31/08)"},{"id":"xt2","rubro":"extra","nombre":"Plataformas (05/10)"},{"id":"xt3","rubro":"extra","nombre":"Curso eCognition"},{"id":"xt4","rubro":"extra","nombre":"Sorpresa Forms"}],"alumnos":[{"nua":"301259","nombre":"CONDE ZARAZUA MARIA ABIGAIL"},{"nua":"301552","nombre":"GARCIA AGUILAR HORACIO"},{"nua":"301266","nombre":"GUDIÑO PEREZ ANA VIANEY"},{"nua":"300706","nombre":"GUERRERO OLVERA ANGEL IZAEL"},{"nua":"301276","nombre":"HERNANDEZ CELESTINO MARIA GUADALUPE"},{"nua":"301258","nombre":"HERNANDEZ ESCOBAR ALONDRA"},{"nua":"799231","nombre":"HERNANDEZ ESPINO EMANUEL"},{"nua":"300847","nombre":"HERNANDEZ MATA ANGEL JOVANI"},{"nua":"301549","nombre":"LOPEZ MUÑIZ LEONARDO"},{"nua":"301274","nombre":"MAURICIO AGUILAR NANCY LIZBETH"},{"nua":"300871","nombre":"MAURICIO RAMIREZ JESUS"},{"nua":"301264","nombre":"MONTES GIL JUAN RAMON"},{"nua":"301275","nombre":"MONTES MATA KAREN YADIRA"},{"nua":"301267","nombre":"RAMIREZ OROZCO DIEGO"},{"nua":"301272","nombre":"RAMOS BARRERA RAUL"},{"nua":"301559","nombre":"RIVERA GRIMALDO SHERLYN JULEYME"},{"nua":"301269","nombre":"SUAREZ HERNANDEZ CESAR REMEDIOS"},{"nua":"301263","nombre":"VALENZUELA VALTIERRA EMILIO MARTIN"},{"nua":"301561","nombre":"VILLEGAS PEREZ ANGEL JAZIEL"},{"nua":"373738","nombre":"CHAVERO RESENDIZ ARMANDO"},{"nua":"301558","nombre":"RIVERA GUTIERREZ SAMUEL ALEXANDER"}],"pesos":{"examenes":0.3,"practicas":0.3,"tareas":0.1,"proyecto":0.3,"extra":0.05},"previstas":{"examenes":3,"practicas":4,"tareas":5,"proyecto":1,"extra":4},"minimo":7,"tope":10};
+const CALIF = {"301259":{"ex1":4.5,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":6.0,"xt2":0.0,"xt3":0.0,"xt4":0.0},"301552":{"ex1":8.5,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":6.0,"xt2":10.0,"xt3":10.0,"xt4":3.5},"301266":{"ex1":9.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":9.0,"xt3":10.0,"xt4":4.0},"300706":{"ex1":7.7,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":5.0,"xt3":0.0,"xt4":0.0},"301276":{"ex1":6.4,"pr1":10.0,"pr2":7.0,"ta1":10.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":6.0,"xt3":0.0,"xt4":7.5},"301258":{"ex1":6.9,"pr1":10.0,"pr2":8.0,"ta1":9.0,"ta2":10.0,"ta3":8.0,"xt1":9.0,"xt2":9.0,"xt3":10.0,"xt4":1.5},"799231":{"ex1":1.2,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":9.0,"xt2":0.0,"xt3":0.0,"xt4":0.0},"300847":{"ex1":7.6,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":10.0,"xt2":0.0,"xt3":10.0,"xt4":0.0},"301549":{"ex1":7.9,"pr1":10.0,"pr2":10.0,"ta1":8.0,"ta2":10.0,"ta3":10.0,"xt1":0.0,"xt2":8.0,"xt3":0.0,"xt4":6.5},"301274":{"ex1":9.5,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":8.0,"xt1":9.0,"xt2":1.0,"xt3":10.0,"xt4":2.5},"300871":{"ex1":8.5,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":0.0,"xt3":10.0,"xt4":3.0},"301264":{"ex1":7.3,"pr1":10.0,"pr2":7.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":0.0,"xt3":10.0,"xt4":6.5},"301275":{"ex1":8.2,"pr1":9.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":5.0,"xt3":10.0,"xt4":0.0},"301267":{"ex1":9.1,"pr1":0.0,"pr2":7.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":3.0,"xt3":0.0,"xt4":10.0},"301272":{"ex1":9.5,"pr1":5.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":10.0,"xt3":10.0,"xt4":10.0},"301559":{"ex1":8.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":6.0,"xt2":9.0,"xt3":10.0,"xt4":6.0},"301269":{"ex1":6.6,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":5.0,"xt2":0.0,"xt3":10.0,"xt4":3.0},"301263":{"ex1":2.3,"pr1":9.5,"pr2":10.0,"ta1":0.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":2.0,"xt3":0.0,"xt4":3.5},"301561":{"ex1":6.8,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":0.0,"xt1":9.0,"xt2":10.0,"xt3":10.0,"xt4":6.0},"373738":{"ex1":9.0,"pr1":9.5,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":4.0,"xt3":10.0,"xt4":4.5},"301558":{"ex1":6.3,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":7.0,"xt2":4.0,"xt3":10.0,"xt4":1.5}};
+/* ======================================================================= */
+const INFO = {
+  examenes:  { nombre: "Exámenes",       prefijo: "Examen",          editable: true },
+  practicas: { nombre: "Prácticas",      prefijo: "Práctica",        editable: true },
+  tareas:    { nombre: "Tareas",         prefijo: "Tarea",           editable: true },
+  proyecto:  { nombre: "Proyecto final", prefijo: "Proyecto final",  editable: false },
+  extra:     { nombre: "Puntos extra",   prefijo: "Actividad extra", editable: true, extra: true }
 };
-/* Calificaciones registradas por NUA, en el mismo orden que "registradas". */
-const REGISTRADAS = {"301259":{"examenes":[4.5],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[6.0,0.0,0.0,0.0]},"301552":{"examenes":[8.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,10.0,10.0,3.5]},"301266":{"examenes":[9.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,9.0,10.0,4.0]},"300706":{"examenes":[7.7],"practicas":[10.0,10.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,5.0,0.0,0.0]},"301276":{"examenes":[6.4],"practicas":[10.0,7.0],"tareas":[10.0,0.0,10.0],"extra":[9.0,6.0,0.0,7.5]},"301258":{"examenes":[6.9],"practicas":[10.0,8.0],"tareas":[9.0,10.0,8.0],"extra":[9.0,9.0,10.0,1.5]},"799231":{"examenes":[1.2],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[9.0,0.0,0.0,0.0]},"300847":{"examenes":[7.6],"practicas":[0.0,0.0],"tareas":[0.0,0.0,0.0],"extra":[10.0,0.0,10.0,0.0]},"301549":{"examenes":[7.9],"practicas":[10.0,10.0],"tareas":[8.0,10.0,10.0],"extra":[0.0,8.0,0.0,6.5]},"301274":{"examenes":[9.5],"practicas":[10.0,10.0],"tareas":[10.0,10.0,8.0],"extra":[9.0,1.0,10.0,2.5]},"300871":{"examenes":[8.5],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,3.0]},"301264":{"examenes":[7.3],"practicas":[10.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,0.0,10.0,6.5]},"301275":{"examenes":[8.2],"practicas":[9.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,5.0,10.0,0.0]},"301267":{"examenes":[9.1],"practicas":[0.0,7.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,3.0,0.0,10.0]},"301272":{"examenes":[9.5],"practicas":[5.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,10.0,10.0,10.0]},"301559":{"examenes":[8.0],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[6.0,9.0,10.0,6.0]},"301269":{"examenes":[6.6],"practicas":[10.0,10.0],"tareas":[10.0,10.0,10.0],"extra":[5.0,0.0,10.0,3.0]},"301263":{"examenes":[2.3],"practicas":[9.5,10.0],"tareas":[0.0,0.0,10.0],"extra":[9.0,2.0,0.0,3.5]},"301561":{"examenes":[6.8],"practicas":[10.0,8.0],"tareas":[10.0,10.0,0.0],"extra":[9.0,10.0,10.0,6.0]},"373738":{"examenes":[9.0],"practicas":[9.5,10.0],"tareas":[10.0,10.0,10.0],"extra":[9.0,4.0,10.0,4.5]},"301558":{"examenes":[6.3],"practicas":[10.0,8.0],"tareas":[10.0,10.0,10.0],"extra":[7.0,4.0,10.0,1.5]}};
-const EJEMPLO = { examenes: [8.0], practicas: [9.0, 8.0], tareas: [10.0, 9.0, 10.0], extra: [9.0, 6.0, 10.0, 4.0] };
-const NOMBRES = {"301259": "CONDE ZARAZUA MARIA ABIGAIL", "301552": "GARCIA AGUILAR HORACIO", "301266": "GUDIÑO PEREZ ANA VIANEY", "300706": "GUERRERO OLVERA ANGEL IZAEL", "301276": "HERNANDEZ CELESTINO MARIA GUADALUPE", "301258": "HERNANDEZ ESCOBAR ALONDRA", "799231": "HERNANDEZ ESPINO EMANUEL", "300847": "HERNANDEZ MATA ANGEL JOVANI", "301549": "LOPEZ MUÑIZ LEONARDO", "301274": "MAURICIO AGUILAR NANCY LIZBETH", "300871": "MAURICIO RAMIREZ JESUS", "301264": "MONTES GIL JUAN RAMON", "301275": "MONTES MATA KAREN YADIRA", "301267": "RAMIREZ OROZCO DIEGO", "301272": "RAMOS BARRERA RAUL", "301559": "RIVERA GRIMALDO SHERLYN JULEYME", "301269": "SUAREZ HERNANDEZ CESAR REMEDIOS", "301263": "VALENZUELA VALTIERRA EMILIO MARTIN", "301561": "VILLEGAS PEREZ ANGEL JAZIEL", "373738": "CHAVERO RESENDIZ ARMANDO", "301558": "RIVERA GUTIERREZ SAMUEL ALEXANDER"};
-/* ================================================== */
+const CONFIG = {
+  rubros: Object.keys(INFO).map(id => ({ id, ...INFO[id], peso: HOJA.pesos[id] || 0 })),
+  valorInicialSimulado: 8.0,
+  tope: HOJA.tope,
+  minimo: HOJA.minimo
+};
+const NOMBRES = Object.fromEntries(HOJA.alumnos.map(a => [a.nua, a.nombre]));
 
-let fijas = EJEMPLO;
-let pend = {};   // rubro -> array de valores simulados
+let fijas = {};  // rubro -> [{nombre, v}] registradas
+let pend = {};   // rubro -> [{nombre, v}] simuladas
+let califActual = null; // calificaciones del alumno cargado (null = ejemplo)
 
 const $ = id => document.getElementById(id);
 const clamp = v => Math.min(10, Math.max(0, v));
 const fmt = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function initSim() {
-  pend = {};
-  CONFIG.rubros.forEach(r => { pend[r.id] = Array(r.pendientes).fill(CONFIG.valorInicialSimulado); });
+function ejemplo() {
+  const g = {};
+  HOJA.columnas.forEach((c, i) => { if (c.rubro !== "proyecto") g[c.id] = [8, 9, 10, 7, 9.5][i % 5]; });
+  return g;
 }
 
-function nombrePend(r, j) {
-  if (r.id === "proyecto") return "Proyecto final";
-  return r.prefijo + " " + (r.registradas.length + j + 1);
+function initSim() {
+  const g = califActual || ejemplo();
+  fijas = {}; pend = {};
+  CONFIG.rubros.forEach(r => {
+    const cols = HOJA.columnas.filter(c => c.rubro === r.id);
+    fijas[r.id] = []; pend[r.id] = [];
+    cols.forEach(c => {
+      if (typeof g[c.id] === "number") fijas[r.id].push({ nombre: c.nombre, v: g[c.id] });
+      else pend[r.id].push({ nombre: c.nombre, v: CONFIG.valorInicialSimulado });
+    });
+    const previstas = HOJA.previstas[r.id] || 0;
+    for (let k = cols.length + 1; k <= previstas; k++) {
+      pend[r.id].push({ nombre: r.id === "proyecto" ? "Proyecto final" : r.prefijo + " " + k, v: CONFIG.valorInicialSimulado });
+    }
+  });
 }
 
 function renderControls() {
@@ -234,26 +247,26 @@ function renderControls() {
   CONFIG.rubros.forEach(r => {
     const fs = document.createElement("fieldset");
     fs.innerHTML = `<legend>${r.nombre} · ${r.extra ? "+" : ""}${Math.round(r.peso * 100)}%${r.extra ? " adicional" : ""}</legend>`;
-    (fijas[r.id] || []).forEach((v, i) => {
+    fijas[r.id].forEach(it => {
       const row = document.createElement("div");
       row.className = "row fixed";
-      row.innerHTML = `<span>${r.registradas[i]}</span><span class="lock">🔒 Registrada</span><span class="fixedval">${fmt(v)}</span>`;
+      row.innerHTML = `<span>${esc(it.nombre)}</span><span class="lock">🔒 Registrada</span><span class="fixedval">${fmt(it.v)}</span>`;
       fs.appendChild(row);
     });
-    pend[r.id].forEach((v, j) => {
-      const nombre = nombrePend(r, j), sid = r.id + "-" + j;
+    pend[r.id].forEach((it, j) => {
+      const nombre = esc(it.nombre), sid = r.id + "-" + j;
       const row = document.createElement("div");
       row.className = "row";
       row.innerHTML = `<label for="r-${sid}">${nombre}</label>
-        <input type="range" id="r-${sid}" min="0" max="10" step="0.1" value="${v}" aria-label="${nombre}">
-        <input type="number" id="n-${sid}" min="0" max="10" step="0.1" value="${fmt(v)}" aria-label="${nombre} (número)">`;
+        <input type="range" id="r-${sid}" min="0" max="10" step="0.1" value="${it.v}" aria-label="${nombre}">
+        <input type="number" id="n-${sid}" min="0" max="10" step="0.1" value="${fmt(it.v)}" aria-label="${nombre} (número)">`;
       const range = row.querySelector('input[type="range"]'), num = row.querySelector('input[type="number"]');
-      range.addEventListener("input", () => { pend[r.id][j] = +range.value; num.value = fmt(pend[r.id][j]); update(); });
+      range.addEventListener("input", () => { it.v = +range.value; num.value = fmt(it.v); update(); });
       num.addEventListener("input", () => {
         if (num.value === "" || isNaN(+num.value)) return;
-        pend[r.id][j] = clamp(+num.value); range.value = pend[r.id][j]; update();
+        it.v = clamp(+num.value); range.value = it.v; update();
       });
-      num.addEventListener("blur", () => { num.value = fmt(pend[r.id][j]); });
+      num.addEventListener("blur", () => { num.value = fmt(it.v); });
       fs.appendChild(row);
     });
     if (r.editable) {
@@ -261,7 +274,13 @@ function renderControls() {
       act.className = "adds";
       act.innerHTML = `<button type="button" class="mini" data-a="add">+ Agregar ${r.prefijo.toLowerCase()}</button>` +
         (pend[r.id].length ? `<button type="button" class="mini" data-a="del">− Quitar la última</button>` : "");
-      act.querySelector('[data-a="add"]').addEventListener("click", () => { if (pend[r.id].length < 12) { pend[r.id].push(CONFIG.valorInicialSimulado); renderControls(); update(); } });
+      act.querySelector('[data-a="add"]').addEventListener("click", () => {
+        if (pend[r.id].length < 12) {
+          const n = fijas[r.id].length + pend[r.id].length + 1;
+          pend[r.id].push({ nombre: r.prefijo + " " + n, v: CONFIG.valorInicialSimulado });
+          renderControls(); update();
+        }
+      });
       const del = act.querySelector('[data-a="del"]');
       if (del) del.addEventListener("click", () => { pend[r.id].pop(); renderControls(); update(); });
       fs.appendChild(act);
@@ -273,19 +292,15 @@ function renderControls() {
 function compute() {
   let base = 0, fijoPts = 0, pesoLibre = 0;
   const filas = CONFIG.rubros.map(r => {
-    const f = fijas[r.id] || [], p = pend[r.id];
+    const f = fijas[r.id].map(x => x.v), p = pend[r.id].map(x => x.v);
     const n = f.length + p.length;
     if (n === 0) return { r, prom: 0, aporte: 0, n };
-    const prom = (f.reduce((a, b) => a + b, 0) + p.reduce((a, b) => a + b, 0)) / n;
-    const w = r.peso / n;
-    fijoPts += f.reduce((a, b) => a + b, 0) * w;
-    pesoLibre += p.length * w;
-    base += prom * r.peso;
+    const sf = f.reduce((a, b) => a + b, 0), sp = p.reduce((a, b) => a + b, 0);
+    const prom = (sf + sp) / n, w = r.peso / n;
+    fijoPts += sf * w; pesoLibre += p.length * w; base += prom * r.peso;
     return { r, prom, aporte: prom * r.peso, n };
   });
-  const sinTope = base;
-  const total = Math.min(CONFIG.tope, sinTope);
-  return { total, sinTope, filas, fijoPts, pesoLibre };
+  return { total: Math.min(CONFIG.tope, base), sinTope: base, filas, fijoPts, pesoLibre };
 }
 
 function update() {
@@ -329,15 +344,15 @@ function update() {
 function cargar(nua) {
   const clave = nua.trim().replace(/\s+/g, "");
   if (!clave) return;
-  if (!(clave in REGISTRADAS)) {
+  if (!(clave in NOMBRES)) {
     $("msg").className = "msg error";
     $("msg").textContent = `No encontramos el NUA ${clave}. Revisa que esté bien escrito o pregúntale a tu profesor.`;
     return;
   }
-  fijas = REGISTRADAS[clave];
+  califActual = CALIF[clave] || {};
   $("msg").className = "msg";
   $("msg").textContent = "Calificaciones cargadas. Mueve las barras para simular lo que falta.";
-  $("who").innerHTML = `<span class="nombre">${NOMBRES[clave] || ""}</span>NUA ${clave}`;
+  $("who").innerHTML = `<span class="nombre">${esc(NOMBRES[clave])}</span>NUA ${clave}`;
   try { localStorage.setItem("nua", clave); } catch (e) {}
   initSim(); renderControls(); update();
 }
