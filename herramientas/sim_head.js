@@ -1,0 +1,113 @@
+/* ===== DATOS (se generan desde la hoja de captura; no editar a mano) ===== */
+const HOJA = __HOJA__;
+const CALIF = __CALIF__;
+/* ======================================================================= */
+const INFO = {
+  examenes:  { nombre: "Exámenes",       prefijo: "Examen",          editable: true },
+  practicas: { nombre: "Prácticas",      prefijo: "Práctica",        editable: true },
+  tareas:    { nombre: "Tareas",         prefijo: "Tarea",           editable: true },
+  proyecto:  { nombre: "Proyecto final", prefijo: "Proyecto final",  editable: false },
+  extra:     { nombre: "Puntos extra",   prefijo: "Actividad extra", editable: true, extra: true }
+};
+const CONFIG = {
+  rubros: Object.keys(INFO).map(id => ({ id, ...INFO[id], peso: HOJA.pesos[id] || 0 })),
+  valorInicialSimulado: 8.0,
+  tope: HOJA.tope,
+  minimo: HOJA.minimo
+};
+const NOMBRES = Object.fromEntries(HOJA.alumnos.map(a => [a.nua, a.nombre]));
+
+let fijas = {};  // rubro -> [{nombre, v}] registradas
+let pend = {};   // rubro -> [{nombre, v}] simuladas
+let califActual = null; // calificaciones del alumno cargado (null = ejemplo)
+
+const $ = id => document.getElementById(id);
+const clamp = v => Math.min(10, Math.max(0, v));
+const fmt = (v, d = 1) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function ejemplo() {
+  const g = {};
+  HOJA.columnas.forEach((c, i) => { if (c.rubro !== "proyecto") g[c.id] = [8, 9, 10, 7, 9.5][i % 5]; });
+  return g;
+}
+
+function initSim() {
+  const g = califActual || ejemplo();
+  fijas = {}; pend = {};
+  CONFIG.rubros.forEach(r => {
+    const cols = HOJA.columnas.filter(c => c.rubro === r.id);
+    fijas[r.id] = []; pend[r.id] = [];
+    cols.forEach(c => {
+      if (typeof g[c.id] === "number") fijas[r.id].push({ nombre: c.nombre, v: g[c.id] });
+      else pend[r.id].push({ nombre: c.nombre, v: CONFIG.valorInicialSimulado });
+    });
+    const previstas = HOJA.previstas[r.id] || 0;
+    for (let k = cols.length + 1; k <= previstas; k++) {
+      pend[r.id].push({ nombre: r.id === "proyecto" ? "Proyecto final" : r.prefijo + " " + k, v: CONFIG.valorInicialSimulado });
+    }
+  });
+}
+
+function renderControls() {
+  const box = $("controls");
+  box.innerHTML = "";
+  CONFIG.rubros.forEach(r => {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = `<legend>${r.nombre} · ${r.extra ? "+" : ""}${Math.round(r.peso * 100)}%${r.extra ? " adicional" : ""}</legend>`;
+    fijas[r.id].forEach(it => {
+      const row = document.createElement("div");
+      row.className = "row fixed";
+      row.innerHTML = `<span>${esc(it.nombre)}</span><span class="lock">🔒 Registrada</span><span class="fixedval">${fmt(it.v)}</span>`;
+      fs.appendChild(row);
+    });
+    pend[r.id].forEach((it, j) => {
+      const nombre = esc(it.nombre), sid = r.id + "-" + j;
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<label for="r-${sid}">${nombre}</label>
+        <input type="range" id="r-${sid}" min="0" max="10" step="0.1" value="${it.v}" aria-label="${nombre}">
+        <input type="number" id="n-${sid}" min="0" max="10" step="0.1" value="${fmt(it.v)}" aria-label="${nombre} (número)">`;
+      const range = row.querySelector('input[type="range"]'), num = row.querySelector('input[type="number"]');
+      range.addEventListener("input", () => { it.v = +range.value; num.value = fmt(it.v); update(); });
+      num.addEventListener("input", () => {
+        if (num.value === "" || isNaN(+num.value)) return;
+        it.v = clamp(+num.value); range.value = it.v; update();
+      });
+      num.addEventListener("blur", () => { num.value = fmt(it.v); });
+      fs.appendChild(row);
+    });
+    if (r.editable) {
+      const act = document.createElement("div");
+      act.className = "adds";
+      act.innerHTML = `<button type="button" class="mini" data-a="add">+ Agregar ${r.prefijo.toLowerCase()}</button>` +
+        (pend[r.id].length ? `<button type="button" class="mini" data-a="del">− Quitar la última</button>` : "");
+      act.querySelector('[data-a="add"]').addEventListener("click", () => {
+        if (pend[r.id].length < 12) {
+          const n = fijas[r.id].length + pend[r.id].length + 1;
+          pend[r.id].push({ nombre: r.prefijo + " " + n, v: CONFIG.valorInicialSimulado });
+          renderControls(); update();
+        }
+      });
+      const del = act.querySelector('[data-a="del"]');
+      if (del) del.addEventListener("click", () => { pend[r.id].pop(); renderControls(); update(); });
+      fs.appendChild(act);
+    }
+    box.appendChild(fs);
+  });
+}
+
+function compute() {
+  let base = 0, fijoPts = 0, pesoLibre = 0;
+  const filas = CONFIG.rubros.map(r => {
+    const f = fijas[r.id].map(x => x.v), p = pend[r.id].map(x => x.v);
+    const n = f.length + p.length;
+    if (n === 0) return { r, prom: 0, aporte: 0, n };
+    const sf = f.reduce((a, b) => a + b, 0), sp = p.reduce((a, b) => a + b, 0);
+    const prom = (sf + sp) / n, w = r.peso / n;
+    fijoPts += sf * w; pesoLibre += p.length * w; base += prom * r.peso;
+    return { r, prom, aporte: prom * r.peso, n };
+  });
+  return { total: Math.min(CONFIG.tope, base), sinTope: base, filas, fijoPts, pesoLibre };
+}
+
