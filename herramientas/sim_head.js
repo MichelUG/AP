@@ -3,19 +3,21 @@ const HOJA = __HOJA__;
 const CALIF = __CALIF__;
 const ASIS = __ASIS__;
 /* ======================================================================= */
-const INFO = {
-  examenes:  { nombre: "Exámenes",       prefijo: "Examen",          editable: true },
-  practicas: { nombre: "Prácticas",      prefijo: "Práctica",        editable: true },
-  tareas:    { nombre: "Tareas",         prefijo: "Tarea",           editable: true },
-  proyecto:  { nombre: "Proyecto final", prefijo: "Proyecto final",  editable: false },
-  extra:     { nombre: "Puntos extra",   prefijo: "Actividad extra", editable: true, extra: true }
-};
+const PREFIJOS = { examenes: "Examen", practicas: "Práctica", tareas: "Tarea", proyecto: "Proyecto final", exposicion: "Exposición", extra: "Actividad extra" };
+const RUBROS_BASE = HOJA.rubros && HOJA.rubros.length ? HOJA.rubros : [
+  { id: "examenes", nombre: "Exámenes" }, { id: "practicas", nombre: "Prácticas" }, { id: "tareas", nombre: "Tareas" },
+  { id: "proyecto", nombre: "Proyecto final" }, { id: "extra", nombre: "Puntos extra", extra: true }
+];
 const CONFIG = {
-  rubros: Object.keys(INFO).map(id => ({ id, ...INFO[id], peso: HOJA.pesos[id] || 0 })),
+  rubros: RUBROS_BASE.map(r => ({
+    id: r.id, nombre: r.nombre, prefijo: r.prefijo || PREFIJOS[r.id] || r.nombre,
+    editable: r.id !== "proyecto", extra: !!(r.extra || r.id === "extra"), peso: HOJA.pesos[r.id] || 0
+  })),
   valorInicialSimulado: 8.0,
   tope: HOJA.tope,
   minimo: HOJA.minimo
 };
+document.getElementById("chips").innerHTML = CONFIG.rubros.map(r => `<span class="chip">${r.nombre} ${r.extra ? "+" : ""}${Math.round(r.peso * 100)}%</span>`).join("");
 const NOMBRES = Object.fromEntries(HOJA.alumnos.map(a => [a.nua, a.nombre]));
 
 let fijas = {};  // rubro -> [{nombre, v}] registradas

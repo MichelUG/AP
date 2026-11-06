@@ -13,6 +13,7 @@ js = "".join(open(os.path.join(T, f)).read() for f in ("sim_head.js", "sim_updat
 js = js.replace("__HOJA__", json.dumps(d["config"], ensure_ascii=False, separators=(",", ":"))) \
        .replace("__CALIF__", json.dumps(d["calif"], ensure_ascii=False, separators=(",", ":"))) \
        .replace("__ASIS__", json.dumps(d.get("asis", {}), ensure_ascii=False, separators=(",", ":")))
-html = open(os.path.join(T, "sim_template.html")).read().replace("__SCRIPT__", js)
+materia = d["config"].get("materia", "Agricultura de Precisión")
+html = open(os.path.join(T, "sim_template.html")).read().replace("__MATERIA__", materia).replace("__SCRIPT__", js)
 open(sys.argv[2], "w").write(html)
 print("ok", sys.argv[2], len(html), "bytes,", len(d["calif"]), "alumnos")
