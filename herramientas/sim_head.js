@@ -25,6 +25,32 @@ const TEMA_ICONOS = {
       <g fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" opacity=".8"><path d="M48 52 a8 8 0 0 0 8 -8"/><path d="M47 58 a14 14 0 0 0 14 -14"/></g>
     </svg>`
   ],
+  rie: [
+    // Aspersor
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Aspersor"><title>Aspersor</title>
+      <rect x="29" y="34" width="6" height="26" rx="2" fill="var(--accent)"/>
+      <rect x="22" y="58" width="20" height="4" rx="2" fill="#4f9a45"/>
+      <path d="M26 34 h12 l-2 -6 h-8 z" fill="var(--accent)"/>
+      <rect x="20" y="24" width="24" height="5" rx="2.5" fill="var(--accent)" transform="rotate(-12 32 26)"/>
+      <g fill="#2fb5e0">${[[8,14],[14,8],[22,4],[42,4],[50,8],[56,14],[5,22],[59,22],[11,26],[53,26],[17,15],[47,15]].map(([x, y]) => `<path d="M${x} ${y - 3} q 2.4 3.2 0 4.6 q -2.4 -1.4 0 -4.6 z"/>`).join("")}</g>
+      <g stroke="#2fb5e0" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".7"><path d="M20 22 Q12 14 8 20"/><path d="M44 22 Q52 14 56 20"/><path d="M26 20 Q24 8 16 6"/><path d="M38 20 Q40 8 48 6"/></g>
+    </svg>`,
+    // Gotero / manguera de goteo
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Riego por goteo"><title>Riego por goteo</title>
+      <path d="M6 44 C18 30 30 30 40 34 S56 38 60 30" stroke="#5f6b74" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g fill="var(--accent)"><circle cx="16" cy="38" r="3.2"/><circle cx="32" cy="32" r="3.2"/><circle cx="48" cy="36.5" r="3.2"/></g>
+      <g fill="#2fb5e0"><path d="M16 43 q 3 4.4 0 6.6 q -3 -2.2 0 -6.6 z"/><path d="M32 37 q 3 4.4 0 6.6 q -3 -2.2 0 -6.6 z"/><path d="M48 41.5 q 3 4.4 0 6.6 q -3 -2.2 0 -6.6 z"/></g>
+      <g fill="#6a4a2f" opacity=".85"><ellipse cx="16" cy="58" rx="9" ry="2.6"/><ellipse cx="32" cy="58" rx="9" ry="2.6"/><ellipse cx="48" cy="58" rx="9" ry="2.6"/></g>
+      <g fill="#4f9a45"><path d="M16 56 c -3 -5 -6 -6 -8 -5 c 2 3 5 5 8 5z"/><path d="M16 56 c 3 -6 6 -7 9 -6 c -2 4 -5 6 -9 6z"/><path d="M48 56 c -3 -5 -6 -6 -8 -5 c 2 3 5 5 8 5z"/><path d="M48 56 c 3 -6 6 -7 9 -6 c -2 4 -5 6 -9 6z"/></g>
+    </svg>`,
+    // Gota de agua
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Gota de agua"><title>Gota de agua</title>
+      <path d="M32 4 C24 18 14 30 14 42 a18 18 0 0 0 36 0 C50 30 40 18 32 4 Z" fill="#1f9ad6"/>
+      <path d="M32 10 C26 21 19 31 19 41 a13 13 0 0 0 7 11.5" fill="none" stroke="#7fd3f5" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="25" cy="40" rx="3.2" ry="5.5" fill="#cfefff" opacity=".8" transform="rotate(-18 25 40)"/>
+      <path d="M22 50 c 6 4 14 4 20 0" stroke="#0b5d8c" stroke-width="1.6" fill="none" opacity=".5"/>
+    </svg>`
+  ],
   pcb: [
     // Mazorca de maíz
     `<svg viewBox="0 0 64 64" role="img" aria-label="Mazorca de maíz"><title>Maíz</title>
@@ -77,7 +103,7 @@ const TEMA_ICONOS = {
   ]
 };
 function aplicarTema(materia, tema) {
-  const t = tema || (/ornamental/i.test(materia || "") ? "pco" : /b[aá]sic/i.test(materia || "") ? "pcb" : "ap");
+  const t = tema || (/ornamental/i.test(materia || "") ? "pco" : /b[aá]sic/i.test(materia || "") ? "pcb" : /riego/i.test(materia || "") ? "rie" : "ap");
   document.documentElement.dataset.tema = t;
   const box = document.getElementById("temaIconos");
   if (box && TEMA_ICONOS[t]) box.innerHTML = TEMA_ICONOS[t].join("");

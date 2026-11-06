@@ -150,6 +150,13 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
 }
 :root[data-tema="pcb"][data-theme="dark"] { --bg: #12160d; --surface: #1a2013; --accent: #a8d48a; --accent-soft: #26301c; --gold: #f2bd2e; --line: #333d26; }
 :root[data-tema="pcb"] header, :root[data-tema="pcb"] .hdr-band { background-image: radial-gradient(circle at 92% 30%, color-mix(in srgb, var(--gold) 15%, transparent) 0 62px, transparent 63px); }
+
+:root[data-tema="rie"] { --bg: #eef6fb; --accent: #0b5d8c; --accent-soft: #dcedf8; --gold: #23b0c9; --line: #cfe0ea; }
+@media (prefers-color-scheme: dark) {
+  :root[data-tema="rie"]:not([data-theme="light"]) { --bg: #08141d; --surface: #0e1f2b; --accent: #8cc8ef; --accent-soft: #14304a; --gold: #3fd0e6; --line: #1d3a50; }
+}
+:root[data-tema="rie"][data-theme="dark"] { --bg: #08141d; --surface: #0e1f2b; --accent: #8cc8ef; --accent-soft: #14304a; --gold: #3fd0e6; --line: #1d3a50; }
+:root[data-tema="rie"] header, :root[data-tema="rie"] .hdr-band { background-image: radial-gradient(circle at 92% 30%, color-mix(in srgb, var(--gold) 15%, transparent) 0 62px, transparent 63px); }
 </style>
 </head>
 <body>
