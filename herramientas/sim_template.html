@@ -128,14 +128,32 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
   .big { font-size: 52px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* === Temas por materia === */
+:root[data-tema="ap"] { --bg: #edf4f7; --accent: #0a4a66; --accent-soft: #dcecf3; --gold: #12a3c2; --line: #cfdde5; }
+:root[data-tema="pco"] { --bg: #fdf6ee; --accent: #8e1d4a; --accent-soft: #fbe6ec; --gold: #ec8a07; --line: #ecdccf; }
+@media (prefers-color-scheme: dark) {
+  :root[data-tema="ap"]:not([data-theme="light"]) { --bg: #0b1820; --surface: #11232e; --accent: #7fd0e6; --accent-soft: #15323f; --gold: #2cc3e0; --line: #1f3b49; }
+  :root[data-tema="pco"]:not([data-theme="light"]) { --bg: #1b1012; --surface: #26171a; --accent: #f4a3bf; --accent-soft: #3a1e27; --gold: #ffb340; --line: #43282f; }
+}
+:root[data-tema="ap"][data-theme="dark"] { --bg: #0b1820; --surface: #11232e; --accent: #7fd0e6; --accent-soft: #15323f; --gold: #2cc3e0; --line: #1f3b49; }
+:root[data-tema="pco"][data-theme="dark"] { --bg: #1b1012; --surface: #26171a; --accent: #f4a3bf; --accent-soft: #3a1e27; --gold: #ffb340; --line: #43282f; }
+.tema-banda { display: flex; align-items: center; gap: 14px; }
+.tema-iconos { display: flex; gap: 10px; align-items: center; margin-left: auto; flex-shrink: 0; }
+.tema-iconos svg { width: 58px; height: 58px; }
+:root[data-tema="ap"] header, :root[data-tema="ap"] .hdr-band { background-image: radial-gradient(circle at 92% 20%, color-mix(in srgb, var(--gold) 16%, transparent) 0 60px, transparent 61px); }
+:root[data-tema="pco"] header, :root[data-tema="pco"] .hdr-band { background-image: radial-gradient(circle at 92% 30%, color-mix(in srgb, var(--gold) 14%, transparent) 0 62px, transparent 63px); }
+@media (max-width: 560px) { .tema-iconos svg { width: 40px; height: 40px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Simulador de calificaciones · __MATERIA__</h1>
-    <p>Escribe tu NUA para cargar tus calificaciones registradas y mueve las que faltan para ver cómo quedaría tu final.</p>
-    <div class="weights" id="chips"></div>
+  <header class="tema-banda">
+    <div>
+      <h1>Simulador de calificaciones · __MATERIA__</h1>
+      <p>Escribe tu NUA para cargar tus calificaciones registradas y mueve las que faltan para ver cómo quedaría tu final.</p>
+      <div class="weights" id="chips"></div>
+    </div>
+    <div class="tema-iconos" id="temaIconos" aria-hidden="true"></div>
   </header>
 
   <section class="card">
