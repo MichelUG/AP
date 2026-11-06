@@ -25,6 +25,35 @@ const TEMA_ICONOS = {
       <g fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" opacity=".8"><path d="M48 52 a8 8 0 0 0 8 -8"/><path d="M47 58 a14 14 0 0 0 14 -14"/></g>
     </svg>`
   ],
+  pcb: [
+    // Mazorca de maíz
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Mazorca de maíz"><title>Maíz</title>
+      <path d="M30 60 C22 50 18 36 22 18 C26 28 28 40 31 52 Z" fill="#5d9b3a"/>
+      <path d="M34 60 C42 50 46 36 42 18 C38 28 36 40 33 52 Z" fill="#4a8530"/>
+      <ellipse cx="32" cy="28" rx="9" ry="22" fill="#f2b705"/>
+      <g fill="#ffd34d">${Array.from({ length: 8 }, (_, r) => Array.from({ length: 3 }, (_, c) => `<ellipse cx="${27 + c * 5}" cy="${11 + r * 4.6}" rx="2" ry="1.9"/>`).join("")).join("")}</g>
+      <path d="M32 6 C31 3 29 2 27 2 M32 6 C33 3 35 2 37 2" stroke="#b5862a" stroke-width="1.4" fill="none"/>
+      <path d="M26 58 C28 50 28 44 27 36 C31 44 32 52 32 60 Z" fill="#6fb046"/>
+    </svg>`,
+    // Vaina de frijol
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Vaina de frijol"><title>Frijol</title>
+      <path d="M10 20 C24 14 44 22 54 44 C56 49 52 52 48 49 C38 34 24 28 12 27 C7 27 6 22 10 20 Z" fill="#79b04a"/>
+      <path d="M12 23 C24 20 40 26 50 44" stroke="#4f8a2c" stroke-width="1.4" fill="none"/>
+      <g fill="#7a2f1b"><ellipse cx="20" cy="25" rx="4.5" ry="3.2" transform="rotate(10 20 25)"/><ellipse cx="30" cy="28" rx="4.5" ry="3.2" transform="rotate(25 30 28)"/><ellipse cx="39" cy="34" rx="4.5" ry="3.2" transform="rotate(40 39 34)"/><ellipse cx="46" cy="42" rx="4.2" ry="3" transform="rotate(55 46 42)"/></g>
+      <g fill="#b8583a" opacity=".7"><ellipse cx="19" cy="24" rx="1.5" ry="1"/><ellipse cx="29" cy="27" rx="1.5" ry="1"/><ellipse cx="38" cy="33" rx="1.5" ry="1"/><ellipse cx="45" cy="41" rx="1.4" ry="1"/></g>
+      <path d="M10 20 C7 17 6 13 8 10" stroke="#4f8a2c" stroke-width="2" fill="none"/>
+      <ellipse cx="14" cy="50" rx="6" ry="4.2" fill="#7a2f1b" transform="rotate(-20 14 50)"/><ellipse cx="13" cy="49" rx="1.8" ry="1.1" fill="#c0603f" opacity=".7"/>
+    </svg>`,
+    // Girasol
+    `<svg viewBox="0 0 64 64" role="img" aria-label="Girasol"><title>Girasol</title>
+      <path d="M32 42 C31 50 32 56 32 63" stroke="#3f7d2a" stroke-width="3" fill="none"/>
+      <path d="M32 54 C40 48 48 50 51 53 C45 58 37 58 32 54 Z" fill="#4f9a35"/>
+      <g fill="#f6b80c">${Array.from({ length: 16 }, (_, i) => `<ellipse cx="32" cy="7" rx="4.2" ry="9" transform="rotate(${i * 22.5} 32 24)"/>`).join("")}</g>
+      <g fill="#ffd02e">${Array.from({ length: 16 }, (_, i) => `<ellipse cx="32" cy="10" rx="3" ry="6" transform="rotate(${i * 22.5 + 11} 32 24)"/>`).join("")}</g>
+      <circle cx="32" cy="24" r="9.5" fill="#5a3415"/>
+      <g fill="#8a5a2b">${Array.from({ length: 14 }, (_, i) => { const a = i * 2.4, r = 1.4 * Math.sqrt(i + 1); return `<circle cx="${(32 + r * Math.cos(a)).toFixed(1)}" cy="${(24 + r * Math.sin(a)).toFixed(1)}" r="1"/>`; }).join("")}</g>
+    </svg>`
+  ],
   pco: [
     // Cempasúchil
     `<svg viewBox="0 0 64 64" role="img" aria-label="Flor de cempasúchil"><title>Cempasúchil</title>
@@ -48,7 +77,7 @@ const TEMA_ICONOS = {
   ]
 };
 function aplicarTema(materia, tema) {
-  const t = tema || (/ornamental/i.test(materia || "") ? "pco" : "ap");
+  const t = tema || (/ornamental/i.test(materia || "") ? "pco" : /b[aá]sic/i.test(materia || "") ? "pcb" : "ap");
   document.documentElement.dataset.tema = t;
   const box = document.getElementById("temaIconos");
   if (box && TEMA_ICONOS[t]) box.innerHTML = TEMA_ICONOS[t].join("");
