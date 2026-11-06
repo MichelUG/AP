@@ -1,6 +1,7 @@
 /* ===== DATOS (se generan desde la hoja de captura; no editar a mano) ===== */
 const HOJA = __HOJA__;
 const CALIF = __CALIF__;
+const ASIS = __ASIS__;
 /* ======================================================================= */
 const INFO = {
   examenes:  { nombre: "Exámenes",       prefijo: "Examen",          editable: true },
@@ -19,7 +20,8 @@ const NOMBRES = Object.fromEntries(HOJA.alumnos.map(a => [a.nua, a.nombre]));
 
 let fijas = {};  // rubro -> [{nombre, v}] registradas
 let pend = {};   // rubro -> [{nombre, v}] simuladas
-let califActual = null; // calificaciones del alumno cargado (null = ejemplo)
+let califActual = null;
+let asisActual = null; // asistencia del alumno cargado (null = sin registro) // calificaciones del alumno cargado (null = ejemplo)
 
 const $ = id => document.getElementById(id);
 const clamp = v => Math.min(10, Math.max(0, v));
@@ -30,6 +32,38 @@ function ejemplo() {
   const g = {};
   HOJA.columnas.forEach((c, i) => { if (c.rubro !== "proyecto") g[c.id] = [8, 9, 10, 7, 9.5][i % 5]; });
   return g;
+}
+
+const ASIS_MIN = HOJA.asistenciaMin ?? 80;
+function asisCalc(m) {
+  const ses = HOJA.sesiones || [];
+  if (!m || !ses.length) return null;
+  let a = 0, r = 0, f = 0;
+  ses.forEach(s => { const v = m[s.id]; if (v === "A") a++; else if (v === "R") r++; else if (v === "F") f++; });
+  const total = a + r + f; if (!total) return null;
+  const faltas = f + Math.floor(r / 3);
+  return { a, r, f, faltas, total, pct: (100 * (total - faltas)) / total };
+}
+function renderAsis() {
+  const card = $("asisCard"), ses = HOJA.sesiones || [];
+  if (!ses.length) { card.hidden = true; return; }
+  card.hidden = false;
+  $("asisRule").textContent = `Se requiere ${ASIS_MIN}% de asistencia para aprobar. Los retardos cuentan como asistencia; cada 3 retardos se convierten en 1 falta.`;
+  const m = califActual ? (asisActual || {}) : null;
+  const t = m ? asisCalc(m) : null;
+  const p = $("asisPct");
+  if (!califActual) { p.textContent = "—"; p.className = "asis-pct"; $("asisCounts").innerHTML = "<span>Escribe tu NUA para ver tu asistencia.</span>"; $("asisStrip").innerHTML = ""; return; }
+  p.textContent = t ? t.pct.toFixed(1) + "%" : "—";
+  p.className = "asis-pct" + (t && t.pct < ASIS_MIN ? " bajo" : "");
+  if (t) {
+    const resto = 3 - (t.r % 3);
+    $("asisCounts").innerHTML = `<span>✓ ${t.a} ${t.a === 1 ? "asistencia" : "asistencias"}</span><span>! ${t.r} ${t.r === 1 ? "retardo" : "retardos"}</span><span>✗ ${t.f} ${t.f === 1 ? "falta" : "faltas"}</span><span>Faltas totales: ${t.faltas}</span>` +
+      (t.r % 3 ? `<span>${resto === 1 ? "1 retardo más" : resto + " retardos más"} = 1 falta</span>` : "") +
+      (t.pct < ASIS_MIN ? `<span class="alerta">Debajo del ${ASIS_MIN}% requerido</span>` : "");
+  } else $("asisCounts").innerHTML = "<span>Todavía no hay asistencia registrada.</span>";
+  const sym = { A: "✓", R: "!", F: "✗" }, nom = { A: "asistencia", R: "retardo", F: "falta" };
+  $("asisStrip").innerHTML = ses.map(s => { const v = m[s.id] || ""; const [y, mo, d] = s.fecha.split("-");
+    return `<div class="asis-d" title="${d}/${mo}/${y}: ${nom[v] || "sin registro"}"><i class="${v}">${sym[v] || ""}</i><small>${d}/${mo}</small></div>`; }).join("");
 }
 
 function initSim() {

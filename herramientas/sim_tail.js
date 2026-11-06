@@ -7,16 +7,17 @@ function cargar(nua) {
     return;
   }
   califActual = CALIF[clave] || {};
+  asisActual = ASIS[clave] || null;
   $("msg").className = "msg";
   $("msg").textContent = "Calificaciones cargadas. Mueve las barras para simular lo que falta.";
   $("who").innerHTML = `<span class="nombre">${esc(NOMBRES[clave])}</span>NUA ${clave}`;
   try { localStorage.setItem("nua", clave); } catch (e) {}
-  initSim(); renderControls(); update();
+  initSim(); renderControls(); update(); renderAsis();
 }
 
 $("loginForm").addEventListener("submit", e => { e.preventDefault(); cargar($("nua").value); });
 $("resetBtn").addEventListener("click", () => { initSim(); renderControls(); update(); });
 $("goalInput").addEventListener("input", update);
 
-initSim(); renderControls(); update();
+initSim(); renderControls(); update(); renderAsis();
 try { const n = localStorage.getItem("nua"); if (n) { $("nua").value = n; cargar(n); } } catch (e) {}

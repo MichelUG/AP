@@ -109,6 +109,19 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .adds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color: var(--accent); border: 1px dashed var(--accent); }
 .cnt { color: var(--muted); font-size: 12px; }
+.asis-top { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+.asis-top .hint { margin: 0; }
+.asis-pct { font-family: var(--font-mono); font-weight: 600; font-size: 34px; line-height: 1; color: var(--good); white-space: nowrap; }
+.asis-pct.bajo { color: var(--bad); }
+.asis-counts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 10px; font-size: 13px; }
+.asis-counts span { padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.asis-counts span.alerta { background: color-mix(in srgb, var(--bad) 15%, transparent); color: var(--bad); font-weight: 600; }
+.asis-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.asis-d { display: grid; justify-items: center; gap: 2px; width: 36px; }
+.asis-d i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff; background: var(--line); }
+.asis-d i.A { background: #2e9e4f; } .asis-d i.R { background: #e0a800; } .asis-d i.F { background: #c0392b; }
+.asis-d small { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.final-box.rojo .estado { color: var(--bad); }
 @media (max-width: 760px) {
   .grid2 { grid-template-columns: 1fr; }
   .summary { grid-template-columns: 1fr; gap: 14px; }
@@ -164,6 +177,18 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
     </div>
   </section>
 
+  <section class="card asis" id="asisCard" aria-live="polite">
+    <div class="asis-top">
+      <div>
+        <h2>Asistencia</h2>
+        <p class="hint" id="asisRule">Se requiere 80% de asistencia para aprobar. Los retardos cuentan como asistencia; cada 3 retardos se convierten en 1 falta.</p>
+      </div>
+      <div class="asis-pct" id="asisPct">—</div>
+    </div>
+    <div class="asis-counts" id="asisCounts"></div>
+    <div class="asis-strip" id="asisStrip" aria-label="Registro de asistencia por fecha"></div>
+  </section>
+
   <div class="grid2">
     <section class="card">
       <h2>Tus calificaciones</h2>
@@ -191,8 +216,9 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
 
 <script>
 /* ===== DATOS (se generan desde la hoja de captura; no editar a mano) ===== */
-const HOJA = {"alumnos":[{"nombre":"CONDE ZARAZUA MARIA ABIGAIL","nua":"301259"},{"nombre":"GARCIA AGUILAR HORACIO","nua":"301552"},{"nombre":"GUDIÑO PEREZ ANA VIANEY","nua":"301266"},{"nombre":"GUERRERO OLVERA ANGEL IZAEL","nua":"300706"},{"nombre":"HERNANDEZ CELESTINO MARIA GUADALUPE","nua":"301276"},{"nombre":"HERNANDEZ ESCOBAR ALONDRA","nua":"301258"},{"nombre":"HERNANDEZ ESPINO EMANUEL","nua":"799231"},{"nombre":"HERNANDEZ MATA ANGEL JOVANI","nua":"300847"},{"nombre":"LOPEZ MUÑIZ LEONARDO","nua":"301549"},{"nombre":"MAURICIO AGUILAR NANCY LIZBETH","nua":"301274"},{"nombre":"MAURICIO RAMIREZ JESUS","nua":"300871"},{"nombre":"MONTES GIL JUAN RAMON","nua":"301264"},{"nombre":"MONTES MATA KAREN YADIRA","nua":"301275"},{"nombre":"RAMIREZ OROZCO DIEGO","nua":"301267"},{"nombre":"RAMOS BARRERA RAUL","nua":"301272"},{"nombre":"RIVERA GRIMALDO SHERLYN JULEYME","nua":"301559"},{"nombre":"SUAREZ HERNANDEZ CESAR REMEDIOS","nua":"301269"},{"nombre":"VALENZUELA VALTIERRA EMILIO MARTIN","nua":"301263"},{"nombre":"VILLEGAS PEREZ ANGEL JAZIEL","nua":"301561"},{"nombre":"CHAVERO RESENDIZ ARMANDO","nua":"373738"},{"nombre":"RIVERA GUTIERREZ SAMUEL ALEXANDER","nua":"301558"}],"columnas":[{"id":"ex1","nombre":"Examen 1","rubro":"examenes"},{"id":"pr1","nombre":"Mapas temáticos","rubro":"practicas"},{"id":"pr2","nombre":"SIG CINUG","rubro":"practicas"},{"id":"cmw14yuzr","nombre":"Composicion de bandas","rubro":"practicas"},{"id":"ta1","nombre":"Puebla y estados","rubro":"tareas"},{"id":"ta2","nombre":"Composition","rubro":"tareas"},{"id":"ta3","nombre":"Firmas espectrales","rubro":"tareas"},{"id":"pf1","nombre":"Proyecto final","rubro":"proyecto"},{"id":"xt1","nombre":"Examen sorpresa (31/08)","rubro":"extra"},{"id":"xt2","nombre":"Plataformas (05/10)","rubro":"extra"},{"id":"xt3","nombre":"Curso eCognition","rubro":"extra"},{"id":"xt4","nombre":"Sorpresa Forms","rubro":"extra"}],"minimo":7,"pesos":{"examenes":0.3,"extra":0.05,"practicas":0.3,"proyecto":0.3,"tareas":0.1},"previstas":{"examenes":3,"extra":4,"practicas":4,"proyecto":1,"tareas":5},"tope":10};
-const CALIF = {"300706":{"cmw14yuzr":0,"ex1":7.7,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":0,"ta3":10,"xt1":9,"xt2":5,"xt3":0,"xt4":0},"300847":{"cmw14yuzr":0,"ex1":7.6,"pf1":7,"pr1":0,"pr2":0,"ta1":0,"ta2":0,"ta3":0,"xt1":10,"xt2":0,"xt3":10,"xt4":0},"300871":{"cmw14yuzr":10,"ex1":8.5,"pf1":7,"pr1":10,"pr2":8,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":0,"xt3":10,"xt4":3},"301258":{"cmw14yuzr":8,"ex1":6.9,"pf1":7,"pr1":10,"pr2":8,"ta1":9,"ta2":10,"ta3":8,"xt1":9,"xt2":9,"xt3":10,"xt4":1.5},"301259":{"cmw14yuzr":0,"ex1":4.5,"pf1":7,"pr1":0,"pr2":0,"ta1":0,"ta2":0,"ta3":0,"xt1":6,"xt2":0,"xt3":0,"xt4":0},"301263":{"cmw14yuzr":0,"ex1":2.3,"pf1":7,"pr1":9.5,"pr2":10,"ta1":0,"ta2":0,"ta3":10,"xt1":9,"xt2":2,"xt3":0,"xt4":3.5},"301264":{"cmw14yuzr":9,"ex1":7.3,"pf1":7,"pr1":10,"pr2":7,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":0,"xt3":10,"xt4":6.5},"301266":{"cmw14yuzr":10,"ex1":9,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":9,"xt3":10,"xt4":4},"301267":{"cmw14yuzr":0,"ex1":9.1,"pf1":7,"pr1":0,"pr2":7,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":3,"xt3":0,"xt4":10},"301269":{"cmw14yuzr":10,"ex1":6.6,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":10,"ta3":10,"xt1":5,"xt2":0,"xt3":10,"xt4":3},"301272":{"cmw14yuzr":10,"ex1":9.5,"pf1":7,"pr1":5,"pr2":8,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":10,"xt3":10,"xt4":10},"301274":{"cmw14yuzr":10,"ex1":9.5,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":10,"ta3":8,"xt1":9,"xt2":1,"xt3":10,"xt4":2.5},"301275":{"cmw14yuzr":0,"ex1":8.2,"pf1":7,"pr1":9,"pr2":8,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":5,"xt3":10,"xt4":0},"301276":{"cmw14yuzr":10,"ex1":6.4,"pf1":7,"pr1":10,"pr2":7,"ta1":10,"ta2":0,"ta3":10,"xt1":9,"xt2":6,"xt3":0,"xt4":7.5},"301549":{"cmw14yuzr":10,"ex1":7.9,"pf1":7,"pr1":10,"pr2":10,"ta1":8,"ta2":10,"ta3":10,"xt1":0,"xt2":8,"xt3":0,"xt4":6.5},"301552":{"cmw14yuzr":9,"ex1":8.5,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":10,"ta3":10,"xt1":6,"xt2":10,"xt3":10,"xt4":3.5},"301558":{"cmw14yuzr":10,"ex1":6.3,"pf1":7,"pr1":10,"pr2":8,"ta1":10,"ta2":10,"ta3":10,"xt1":7,"xt2":4,"xt3":10,"xt4":1.5},"301559":{"cmw14yuzr":10,"ex1":8,"pf1":7,"pr1":10,"pr2":10,"ta1":10,"ta2":10,"ta3":10,"xt1":6,"xt2":9,"xt3":10,"xt4":6},"301561":{"cmw14yuzr":10,"ex1":6.8,"pf1":7,"pr1":10,"pr2":8,"ta1":10,"ta2":10,"ta3":0,"xt1":9,"xt2":10,"xt3":10,"xt4":6},"373738":{"cmw14yuzr":10,"ex1":9,"pf1":7,"pr1":9.5,"pr2":10,"ta1":10,"ta2":10,"ta3":10,"xt1":9,"xt2":4,"xt3":10,"xt4":4.5},"799231":{"cmw14yuzr":0,"ex1":1.2,"pf1":7,"pr1":0,"pr2":0,"ta1":0,"ta2":0,"ta3":0,"xt1":9,"xt2":0,"xt3":0,"xt4":0}};
+const HOJA = {"columnas":[{"id":"ex1","rubro":"examenes","nombre":"Examen 1"},{"id":"pr1","rubro":"practicas","nombre":"Mapas temáticos"},{"id":"pr2","rubro":"practicas","nombre":"SIG CINUG"},{"id":"cmw14yuzr","nombre":"Composicion de bandas","rubro":"practicas"},{"id":"ta1","rubro":"tareas","nombre":"Puebla y estados"},{"id":"ta2","rubro":"tareas","nombre":"Composition"},{"id":"ta3","rubro":"tareas","nombre":"Firmas espectrales"},{"id":"pf1","rubro":"proyecto","nombre":"Proyecto final"},{"id":"xt1","rubro":"extra","nombre":"Examen sorpresa (31/08)"},{"id":"xt2","rubro":"extra","nombre":"Plataformas (05/10)"},{"id":"xt3","rubro":"extra","nombre":"Curso eCognition"},{"id":"xt4","rubro":"extra","nombre":"Sorpresa Forms"}],"alumnos":[{"nua":"301259","nombre":"CONDE ZARAZUA MARIA ABIGAIL"},{"nua":"301552","nombre":"GARCIA AGUILAR HORACIO"},{"nua":"301266","nombre":"GUDIÑO PEREZ ANA VIANEY"},{"nua":"300706","nombre":"GUERRERO OLVERA ANGEL IZAEL"},{"nua":"301276","nombre":"HERNANDEZ CELESTINO MARIA GUADALUPE"},{"nua":"301258","nombre":"HERNANDEZ ESCOBAR ALONDRA"},{"nua":"799231","nombre":"HERNANDEZ ESPINO EMANUEL"},{"nua":"300847","nombre":"HERNANDEZ MATA ANGEL JOVANI"},{"nua":"301549","nombre":"LOPEZ MUÑIZ LEONARDO"},{"nua":"301274","nombre":"MAURICIO AGUILAR NANCY LIZBETH"},{"nua":"300871","nombre":"MAURICIO RAMIREZ JESUS"},{"nua":"301264","nombre":"MONTES GIL JUAN RAMON"},{"nua":"301275","nombre":"MONTES MATA KAREN YADIRA"},{"nua":"301267","nombre":"RAMIREZ OROZCO DIEGO"},{"nua":"301272","nombre":"RAMOS BARRERA RAUL"},{"nua":"301559","nombre":"RIVERA GRIMALDO SHERLYN JULEYME"},{"nua":"301269","nombre":"SUAREZ HERNANDEZ CESAR REMEDIOS"},{"nua":"301263","nombre":"VALENZUELA VALTIERRA EMILIO MARTIN"},{"nua":"301561","nombre":"VILLEGAS PEREZ ANGEL JAZIEL"},{"nua":"373738","nombre":"CHAVERO RESENDIZ ARMANDO"},{"nua":"301558","nombre":"RIVERA GUTIERREZ SAMUEL ALEXANDER"}],"pesos":{"examenes":0.3,"practicas":0.3,"tareas":0.1,"proyecto":0.3,"extra":0.05},"previstas":{"examenes":3,"practicas":4,"tareas":5,"proyecto":1,"extra":4},"minimo":7,"tope":10,"sesiones":[{"id":"s20260818","fecha":"2026-08-18"},{"id":"s20260824","fecha":"2026-08-24"},{"id":"s20260825","fecha":"2026-08-25"},{"id":"s20260831","fecha":"2026-08-31"},{"id":"s20260907","fecha":"2026-09-07"},{"id":"s20260908","fecha":"2026-09-08"},{"id":"s20260914","fecha":"2026-09-14"},{"id":"s20260915","fecha":"2026-09-15"},{"id":"s20260921","fecha":"2026-09-21"},{"id":"s20260922","fecha":"2026-09-22"},{"id":"s20260928","fecha":"2026-09-28"},{"id":"s20260929","fecha":"2026-09-29"},{"id":"s20261005","fecha":"2026-10-05"},{"id":"s20261006","fecha":"2026-10-06"},{"id":"s20261012","fecha":"2026-10-12"},{"id":"s20261026","fecha":"2026-10-26"},{"id":"s20261027","fecha":"2026-10-27"},{"id":"s20261103","fecha":"2026-11-03"}],"asistenciaMin":80};
+const CALIF = {"300706":{"cmw14yuzr":0.0,"ex1":7.7,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":5.0,"xt3":0.0,"xt4":0.0},"300847":{"cmw14yuzr":0.0,"ex1":7.6,"pf1":7.0,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":10.0,"xt2":0.0,"xt3":10.0,"xt4":0.0},"300871":{"cmw14yuzr":10.0,"ex1":8.5,"pf1":7.0,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":0.0,"xt3":10.0,"xt4":3.0},"301258":{"cmw14yuzr":8.0,"ex1":6.9,"pf1":7.0,"pr1":10.0,"pr2":8.0,"ta1":9.0,"ta2":10.0,"ta3":8.0,"xt1":9.0,"xt2":9.0,"xt3":10.0,"xt4":1.5},"301259":{"cmw14yuzr":0.0,"ex1":4.5,"pf1":7.0,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":6.0,"xt2":0.0,"xt3":0.0,"xt4":0.0},"301263":{"cmw14yuzr":0.0,"ex1":2.3,"pf1":7.0,"pr1":9.5,"pr2":10.0,"ta1":0.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":2.0,"xt3":0.0,"xt4":3.5},"301264":{"cmw14yuzr":9.0,"ex1":7.3,"pf1":7.0,"pr1":10.0,"pr2":7.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":0.0,"xt3":10.0,"xt4":6.5},"301266":{"cmw14yuzr":10.0,"ex1":9.0,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":9.0,"xt3":10.0,"xt4":4.0},"301267":{"cmw14yuzr":0.0,"ex1":9.1,"pf1":7.0,"pr1":0.0,"pr2":7.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":3.0,"xt3":0.0,"xt4":10.0},"301269":{"cmw14yuzr":10.0,"ex1":6.6,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":5.0,"xt2":0.0,"xt3":10.0,"xt4":3.0},"301272":{"cmw14yuzr":10.0,"ex1":9.5,"pf1":7.0,"pr1":5.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":10.0,"xt3":10.0,"xt4":10.0},"301274":{"cmw14yuzr":10.0,"ex1":9.5,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":8.0,"xt1":9.0,"xt2":1.0,"xt3":10.0,"xt4":2.5},"301275":{"cmw14yuzr":0.0,"ex1":8.2,"pf1":7.0,"pr1":9.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":5.0,"xt3":10.0,"xt4":0.0},"301276":{"cmw14yuzr":10.0,"ex1":6.4,"pf1":7.0,"pr1":10.0,"pr2":7.0,"ta1":10.0,"ta2":0.0,"ta3":10.0,"xt1":9.0,"xt2":6.0,"xt3":0.0,"xt4":7.5},"301549":{"cmw14yuzr":10.0,"ex1":7.9,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":8.0,"ta2":10.0,"ta3":10.0,"xt1":0.0,"xt2":8.0,"xt3":0.0,"xt4":6.5},"301552":{"cmw14yuzr":9.0,"ex1":8.5,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":6.0,"xt2":10.0,"xt3":10.0,"xt4":3.5},"301558":{"cmw14yuzr":10.0,"ex1":6.3,"pf1":7.0,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":7.0,"xt2":4.0,"xt3":10.0,"xt4":1.5},"301559":{"cmw14yuzr":10.0,"ex1":8.0,"pf1":7.0,"pr1":10.0,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":6.0,"xt2":9.0,"xt3":10.0,"xt4":6.0},"301561":{"cmw14yuzr":10.0,"ex1":6.8,"pf1":7.0,"pr1":10.0,"pr2":8.0,"ta1":10.0,"ta2":10.0,"ta3":0.0,"xt1":9.0,"xt2":10.0,"xt3":10.0,"xt4":6.0},"373738":{"cmw14yuzr":10.0,"ex1":9.0,"pf1":7.0,"pr1":9.5,"pr2":10.0,"ta1":10.0,"ta2":10.0,"ta3":10.0,"xt1":9.0,"xt2":4.0,"xt3":10.0,"xt4":4.5},"799231":{"cmw14yuzr":0.0,"ex1":1.2,"pf1":7.0,"pr1":0.0,"pr2":0.0,"ta1":0.0,"ta2":0.0,"ta3":0.0,"xt1":9.0,"xt2":0.0,"xt3":0.0,"xt4":0.0}};
+const ASIS = {"301259":{"s20260818":"F","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"F","s20260908":"F","s20260914":"F","s20260915":"A","s20260921":"F","s20260922":"A","s20260928":"F","s20260929":"A","s20261005":"F","s20261006":"F","s20261012":"A","s20261026":"F","s20261027":"F","s20261103":"A","smw53ok9n":"A"},"301552":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A","smw53ok9n":"F"},"301266":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"300706":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"F","s20261027":"A","s20261103":"A"},"301276":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301258":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"799231":{"s20260818":"F","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"F","s20260908":"F","s20260914":"F","s20260915":"F","s20260921":"F","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"F","s20261006":"F","s20261012":"A","s20261026":"F","s20261027":"F","s20261103":"A"},"300847":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"F","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"F","s20261006":"A","s20261012":"F","s20261026":"A","s20261027":"F","s20261103":"A"},"301549":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"F","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"F"},"301274":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"300871":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"F","s20260922":"A","s20260928":"R","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301264":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"R","s20260929":"A","s20261005":"A","s20261006":"A","s20261026":"A","s20261027":"A","s20261103":"A","s20261012":"A"},"301275":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301267":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301272":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301559":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301269":{"s20260818":"A","s20260824":"F","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"F","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"F"},"301263":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301561":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"373738":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"},"301558":{"s20260818":"A","s20260824":"A","s20260825":"A","s20260831":"A","s20260907":"A","s20260908":"A","s20260914":"A","s20260915":"A","s20260921":"A","s20260922":"A","s20260928":"A","s20260929":"A","s20261005":"A","s20261006":"A","s20261012":"A","s20261026":"A","s20261027":"A","s20261103":"A"}};
 /* ======================================================================= */
 const INFO = {
   examenes:  { nombre: "Exámenes",       prefijo: "Examen",          editable: true },
@@ -211,7 +237,8 @@ const NOMBRES = Object.fromEntries(HOJA.alumnos.map(a => [a.nua, a.nombre]));
 
 let fijas = {};  // rubro -> [{nombre, v}] registradas
 let pend = {};   // rubro -> [{nombre, v}] simuladas
-let califActual = null; // calificaciones del alumno cargado (null = ejemplo)
+let califActual = null;
+let asisActual = null; // asistencia del alumno cargado (null = sin registro) // calificaciones del alumno cargado (null = ejemplo)
 
 const $ = id => document.getElementById(id);
 const clamp = v => Math.min(10, Math.max(0, v));
@@ -222,6 +249,38 @@ function ejemplo() {
   const g = {};
   HOJA.columnas.forEach((c, i) => { if (c.rubro !== "proyecto") g[c.id] = [8, 9, 10, 7, 9.5][i % 5]; });
   return g;
+}
+
+const ASIS_MIN = HOJA.asistenciaMin ?? 80;
+function asisCalc(m) {
+  const ses = HOJA.sesiones || [];
+  if (!m || !ses.length) return null;
+  let a = 0, r = 0, f = 0;
+  ses.forEach(s => { const v = m[s.id]; if (v === "A") a++; else if (v === "R") r++; else if (v === "F") f++; });
+  const total = a + r + f; if (!total) return null;
+  const faltas = f + Math.floor(r / 3);
+  return { a, r, f, faltas, total, pct: (100 * (total - faltas)) / total };
+}
+function renderAsis() {
+  const card = $("asisCard"), ses = HOJA.sesiones || [];
+  if (!ses.length) { card.hidden = true; return; }
+  card.hidden = false;
+  $("asisRule").textContent = `Se requiere ${ASIS_MIN}% de asistencia para aprobar. Los retardos cuentan como asistencia; cada 3 retardos se convierten en 1 falta.`;
+  const m = califActual ? (asisActual || {}) : null;
+  const t = m ? asisCalc(m) : null;
+  const p = $("asisPct");
+  if (!califActual) { p.textContent = "—"; p.className = "asis-pct"; $("asisCounts").innerHTML = "<span>Escribe tu NUA para ver tu asistencia.</span>"; $("asisStrip").innerHTML = ""; return; }
+  p.textContent = t ? t.pct.toFixed(1) + "%" : "—";
+  p.className = "asis-pct" + (t && t.pct < ASIS_MIN ? " bajo" : "");
+  if (t) {
+    const resto = 3 - (t.r % 3);
+    $("asisCounts").innerHTML = `<span>✓ ${t.a} ${t.a === 1 ? "asistencia" : "asistencias"}</span><span>! ${t.r} ${t.r === 1 ? "retardo" : "retardos"}</span><span>✗ ${t.f} ${t.f === 1 ? "falta" : "faltas"}</span><span>Faltas totales: ${t.faltas}</span>` +
+      (t.r % 3 ? `<span>${resto === 1 ? "1 retardo más" : resto + " retardos más"} = 1 falta</span>` : "") +
+      (t.pct < ASIS_MIN ? `<span class="alerta">Debajo del ${ASIS_MIN}% requerido</span>` : "");
+  } else $("asisCounts").innerHTML = "<span>Todavía no hay asistencia registrada.</span>";
+  const sym = { A: "✓", R: "!", F: "✗" }, nom = { A: "asistencia", R: "retardo", F: "falta" };
+  $("asisStrip").innerHTML = ses.map(s => { const v = m[s.id] || ""; const [y, mo, d] = s.fecha.split("-");
+    return `<div class="asis-d" title="${d}/${mo}/${y}: ${nom[v] || "sin registro"}"><i class="${v}">${sym[v] || ""}</i><small>${d}/${mo}</small></div>`; }).join("");
 }
 
 function initSim() {
@@ -317,6 +376,8 @@ function update() {
   if (total >= CONFIG.minimo) { color = "verde"; titulo = "Aprobado"; desc = `Con esta simulación pasas con ${fmt(CONFIG.minimo)} o más.`; }
   else if (maximo >= CONFIG.minimo) { color = "amarillo"; titulo = "En peligro"; desc = `Con esta simulación no llegas a ${fmt(CONFIG.minimo)}, pero todavía puedes alcanzarlo.`; }
   else { color = "rojo"; titulo = `Ya no alcanza el ${fmt(CONFIG.minimo, 0)}`; desc = `Aun con 10 en todo lo que falta, lo máximo posible es ${fmt(maximo)}.`; }
+  const ta = califActual ? asisCalc(asisActual || {}) : null;
+  if (ta && ta.pct < ASIS_MIN) { color = "rojo"; titulo = "Reprueba por asistencia"; desc = `Tu asistencia es de ${ta.pct.toFixed(1)}% y se requiere ${ASIS_MIN}% para aprobar, sin importar la calificación.`; }
   $("finalBox").className = "final-box " + color;
   $("status").textContent = titulo;
   $("statusDesc").textContent = desc;
@@ -350,18 +411,19 @@ function cargar(nua) {
     return;
   }
   califActual = CALIF[clave] || {};
+  asisActual = ASIS[clave] || null;
   $("msg").className = "msg";
   $("msg").textContent = "Calificaciones cargadas. Mueve las barras para simular lo que falta.";
   $("who").innerHTML = `<span class="nombre">${esc(NOMBRES[clave])}</span>NUA ${clave}`;
   try { localStorage.setItem("nua", clave); } catch (e) {}
-  initSim(); renderControls(); update();
+  initSim(); renderControls(); update(); renderAsis();
 }
 
 $("loginForm").addEventListener("submit", e => { e.preventDefault(); cargar($("nua").value); });
 $("resetBtn").addEventListener("click", () => { initSim(); renderControls(); update(); });
 $("goalInput").addEventListener("input", update);
 
-initSim(); renderControls(); update();
+initSim(); renderControls(); update(); renderAsis();
 try { const n = localStorage.getItem("nua"); if (n) { $("nua").value = n; cargar(n); } } catch (e) {}
 </script>
 </body>

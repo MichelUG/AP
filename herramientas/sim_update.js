@@ -12,6 +12,8 @@ function update() {
   if (total >= CONFIG.minimo) { color = "verde"; titulo = "Aprobado"; desc = `Con esta simulación pasas con ${fmt(CONFIG.minimo)} o más.`; }
   else if (maximo >= CONFIG.minimo) { color = "amarillo"; titulo = "En peligro"; desc = `Con esta simulación no llegas a ${fmt(CONFIG.minimo)}, pero todavía puedes alcanzarlo.`; }
   else { color = "rojo"; titulo = `Ya no alcanza el ${fmt(CONFIG.minimo, 0)}`; desc = `Aun con 10 en todo lo que falta, lo máximo posible es ${fmt(maximo)}.`; }
+  const ta = califActual ? asisCalc(asisActual || {}) : null;
+  if (ta && ta.pct < ASIS_MIN) { color = "rojo"; titulo = "Reprueba por asistencia"; desc = `Tu asistencia es de ${ta.pct.toFixed(1)}% y se requiere ${ASIS_MIN}% para aprobar, sin importar la calificación.`; }
   $("finalBox").className = "final-box " + color;
   $("status").textContent = titulo;
   $("statusDesc").textContent = desc;

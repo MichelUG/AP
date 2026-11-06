@@ -109,6 +109,19 @@ tfoot td { font-weight: 700; border-bottom: 0; }
 .adds { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color: var(--accent); border: 1px dashed var(--accent); }
 .cnt { color: var(--muted); font-size: 12px; }
+.asis-top { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+.asis-top .hint { margin: 0; }
+.asis-pct { font-family: var(--font-mono); font-weight: 600; font-size: 34px; line-height: 1; color: var(--good); white-space: nowrap; }
+.asis-pct.bajo { color: var(--bad); }
+.asis-counts { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 10px; font-size: 13px; }
+.asis-counts span { padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.asis-counts span.alerta { background: color-mix(in srgb, var(--bad) 15%, transparent); color: var(--bad); font-weight: 600; }
+.asis-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.asis-d { display: grid; justify-items: center; gap: 2px; width: 36px; }
+.asis-d i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff; background: var(--line); }
+.asis-d i.A { background: #2e9e4f; } .asis-d i.R { background: #e0a800; } .asis-d i.F { background: #c0392b; }
+.asis-d small { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.final-box.rojo .estado { color: var(--bad); }
 @media (max-width: 760px) {
   .grid2 { grid-template-columns: 1fr; }
   .summary { grid-template-columns: 1fr; gap: 14px; }
@@ -162,6 +175,18 @@ button.mini { font-size: 13px; padding: 4px 10px; background: transparent; color
       <div class="ticks"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
       <p class="need" id="need"></p>
     </div>
+  </section>
+
+  <section class="card asis" id="asisCard" aria-live="polite">
+    <div class="asis-top">
+      <div>
+        <h2>Asistencia</h2>
+        <p class="hint" id="asisRule">Se requiere 80% de asistencia para aprobar. Los retardos cuentan como asistencia; cada 3 retardos se convierten en 1 falta.</p>
+      </div>
+      <div class="asis-pct" id="asisPct">—</div>
+    </div>
+    <div class="asis-counts" id="asisCounts"></div>
+    <div class="asis-strip" id="asisStrip" aria-label="Registro de asistencia por fecha"></div>
   </section>
 
   <div class="grid2">
